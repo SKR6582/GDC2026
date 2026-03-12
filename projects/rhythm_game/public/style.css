@@ -1,0 +1,224 @@
+:root {
+    --bg-dark: #070711;
+    --primary-cyan: #00E5FF;
+    --primary-pink: #FF2A5F;
+    --text-main: #FFFFFF;
+    --text-muted: rgba(255, 255, 255, 0.6);
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.08);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-dark);
+    /* Subtle background glow effect */
+    background-image: 
+        radial-gradient(circle at 15% 50%, rgba(0, 229, 255, 0.08), transparent 40%),
+        radial-gradient(circle at 85% 30%, rgba(255, 42, 95, 0.08), transparent 40%);
+    color: var(--text-main);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: hidden;
+}
+
+#app {
+    width: 100%;
+    max-width: 1200px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* SONG SELECT SCREEN */
+#song-select-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    animation: fadeIn 0.5s ease;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 50px;
+    margin-top: 40px;
+}
+
+.header h1 {
+    font-size: 3rem;
+    font-weight: 900;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, var(--text-main) 0%, var(--text-muted) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+}
+
+.header p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    font-weight: 300;
+}
+
+#song-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    width: 100%;
+    max-width: 1000px;
+}
+
+.song-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 35px 25px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.song-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(0, 229, 255, 0.1), rgba(255, 42, 95, 0.1));
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.song-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(0, 229, 255, 0.3);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 229, 255, 0.1);
+}
+
+.song-card:hover::before {
+    opacity: 1;
+}
+
+.song-card h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    position: relative;
+    z-index: 1;
+    text-transform: capitalize;
+}
+
+/* GAME UI */
+#game-ui {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 800px;
+    animation: fadeIn 0.5s ease;
+}
+
+/* Responsive Game Container Wrapper */
+.game-wrapper {
+    position: relative;
+    width: 100%;
+    /* Create a responsive container maintaining 8:9 aspect ratio */
+    aspect-ratio: 8 / 9;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 2px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+    /* Optional: backdrop filter for overall game board if needed, but canvas draws black mostly */
+}
+
+/* Force canvas to fit container responsively */
+canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: 22px;
+    background: rgba(0, 0, 0, 0.85); /* Deep black for canvas contrast */
+}
+
+/* Instructions */
+.instructions {
+    margin-top: 25px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.key-hints {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.key-hints span {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--primary-cyan);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Give special colors to specific keys */
+.key-hints span:first-child, .key-hints span:last-child {
+    color: var(--primary-pink);
+}
+
+.instructions code {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-weight: 500;
+    color: var(--text-main);
+    letter-spacing: 1px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .header h1 { font-size: 2.2rem; }
+    
+    .game-wrapper {
+        border-radius: 16px;
+    }
+    canvas {
+        border-radius: 14px;
+    }
+    
+    .key-hints span {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
+}
