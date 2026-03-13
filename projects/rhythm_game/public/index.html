@@ -3,39 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stellar Rhythm</title>
-    <!-- Use a premium, modern font -->
+    <title>Stellar Rhythm - 3D Denpa Edition</title>
+    <!-- Premium, modern and pixel fonts for Denpa aesthetic -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Moirai+One&family=Outfit:wght@300;500;700;900&family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Postprocessing could be added later, but sticking to core Three.js for performance and self-containment -->
 </head>
 <body>
-    <div id="app">
-        <div id="song-select-screen">
-            <div class="header">
-                <h1>Select a Track</h1>
-                <p>Choose your rhythm and start playing</p>
-            </div>
-            <div id="song-list"></div>
-        </div>
+    <!-- Scanline overlay for that retro/denpa TV feel -->
+    <div class="scanlines"></div>
 
-        <div id="game-ui" style="display: none;">
-            <div class="game-wrapper">
-                <canvas id="gameCanvas" width="800" height="900"></canvas>
-            </div>
-            <div class="instructions">
-                <div class="key-hints">
-                    <span>D</span>
-                    <span>F</span>
-                    <span>J</span>
-                    <span>K</span>
+    <div id="game-container">
+        <!-- 3D Canvas Background -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- UI Overlay Layer -->
+        <div id="ui-layer">
+            
+            <!-- Song Selection Screen -->
+            <div id="song-select-screen" class="screen active">
+                <div class="header glitch-container">
+                    <h1 class="glitch" data-text="DANCING ARROW">DANCING ARROW</h1>
+                    <p class="blink">🌟 SELECT YOUR TRACK 🌟</p>
                 </div>
-                <p>Hit <code>SPACE</code> to Start/Restart. Hit <code>R</code> to Record.</p>
+                
+                <div class="viewport-wrapper">
+                    <button id="prev-btn" class="nav-btn">&lt;</button>
+                    <div id="song-carousel">
+                        <div id="song-list"></div>
+                    </div>
+                    <button id="next-btn" class="nav-btn">&gt;</button>
+                </div>
+                
+                <div class="footer-info">
+                    <button id="settings-open-btn" class="action-btn" style="padding: 10px 20px; font-size: 0.8rem; margin-bottom: 20px;">⚙️ OPTIONS</button>
+                    <br>
+                    <p>SYSTEM READY // INSERT COIN</p>
+                </div>
+            </div>
+
+            <!-- Game HUD Screen -->
+            <div id="game-hud" class="screen">
+                <div class="hud-top">
+                    <div class="score-box">
+                        <span class="label">SCORE</span>
+                        <div id="score-display">0000000</div>
+                    </div>
+                    <div class="combo-box">
+                        <span class="label">COMBO</span>
+                        <div id="combo-display" class="glitch-combo" data-text="0">0</div>
+                    </div>
+                </div>
+                
+                <!-- Center Judgment text -->
+                <div id="judgment-display" class=""></div>
+
+                <div class="hud-bottom">
+                    <div class="key-hints">
+                        <div class="key-btn" data-key="d">D</div>
+                        <div class="key-btn" data-key="f">F</div>
+                        <div class="key-btn" data-key="j">J</div>
+                        <div class="key-btn" data-key="k">K</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div id="progress-bar"></div>
+                    </div>
+                </div>
+                
+                <div id="record-hud" style="display: none;">
+                    <h2 class="blink" style="color: #ff00ff;">🔴 RECORDING MODE</h2>
+                    <p id="record-count">Notes: 0</p>
+                </div>
+            </div>
+            
+            <!-- Result Screen -->
+            <div id="result-screen" class="screen text-center">
+                <h1 class="glitch" data-text="STAGE CLEAR" id="result-title">STAGE CLEAR</h1>
+                <div class="result-stats">
+                    <div class="stat"><span class="label">SCORE</span> <span id="res-score" class="value">0</span></div>
+                    <div class="stat"><span class="label">MAX COMBO</span> <span id="res-combo" class="value">0</span></div>
+                    <div class="stat-judgments">
+                        <div class="j-stat perfect">PERFECT <span id="res-perfect">0</span></div>
+                        <div class="j-stat great">GREAT <span id="res-great">0</span></div>
+                        <div class="j-stat good">GOOD <span id="res-good">0</span></div>
+                        <div class="j-stat miss">MISS <span id="res-miss">0</span></div>
+                    </div>
+                </div>
+                <button id="restart-btn" class="action-btn">BACK TO MENU (SPACE)</button>
+            </div>
+
+            <!-- Error Screen -->
+            <div id="error-screen" class="screen text-center">
+                <h1 style="color: red; text-shadow: 0 0 10px red;">SYSTEM ERROR</h1>
+                <p id="error-msg">Something went wrong.</p>
+                <button onclick="location.reload()" class="action-btn">REBOOT</button>
+            </div>
+
+            <!-- Settings Modal -->
+            <div id="settings-modal" class="screen text-center" style="display: none; background: rgba(5, 0, 20, 0.95);">
+                <div class="settings-container">
+                    <h2 class="glitch" data-text="OPTIONS" style="font-size: 2.5rem; margin-bottom: 30px;">OPTIONS</h2>
+                    
+                    <div class="setting-row">
+                        <label title="Delay between audio and notes (ms)">Audio Offset (ms): <span id="val-offset">0</span></label>
+                        <input type="range" id="set-offset" min="-500" max="500" value="0">
+                    </div>
+                    
+                    <div class="setting-row">
+                        <label title="Visual position of the hit line">Judgment Position: <span id="val-judg">6</span></label>
+                        <input type="range" id="set-judg" min="-10" max="15" step="0.5" value="6">
+                    </div>
+
+                    <div class="setting-row">
+                        <label title="Volume of the background music">Music Volume: <span id="val-mvol">80</span>%</label>
+                        <input type="range" id="set-mvol" min="0" max="100" value="80">
+                    </div>
+
+                    <div class="setting-row">
+                        <label title="Volume of hit sounds">SE Volume: <span id="val-vol">50</span>%</label>
+                        <input type="range" id="set-vol" min="0" max="100" value="50">
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button id="calib-open-btn" class="action-btn" style="flex: 1; padding: 10px; font-size: 0.7rem; border-color: var(--neon-lime); color: var(--neon-lime);">SYNC CALIBRATION</button>
+                        <button id="settings-close-btn" class="action-btn" style="flex: 1; padding: 10px; font-size: 0.7rem;">SAVE & CLOSE</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calibration Screen -->
+            <div id="calibration-screen" class="screen text-center" style="display: none; background: rgba(5, 0, 20, 0.98);">
+                <div class="settings-container" style="max-width: 600px;">
+                    <h2 class="glitch" data-text="CALIBRATION" style="font-size: 2rem;">SYNC CALIBRATION</h2>
+                    <p style="font-family: 'Press Start 2P', monospace; font-size: 0.6rem; color: var(--neon-cyan); line-height: 1.5;">
+                        TAP ANY KEY TO THE BEAT.<br>PRESS SPACE TO FINISH.
+                    </p>
+                    
+                    <div class="calib-visual-area">
+                        <div id="calib-target" class="calib-circle"></div>
+                        <div id="calib-pulse" class="calib-pulse"></div>
+                    </div>
+
+                    <div class="calib-stats">
+                        <div class="stat"><span class="label">CURRENT OFFSET:</span> <span id="calib-offset-val">0</span>ms</div>
+                        <div class="stat"><span class="label">TAPS:</span> <span id="calib-tap-count">0</span></div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button id="calib-cancel-btn" class="action-btn" style="flex: 1; border-color: #666; color: #666;">CANCEL</button>
+                        <button id="calib-apply-btn" class="action-btn" style="flex: 1;">APPLY & SAVE</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- SE Synth and Game Logic -->
     <script src="game.js"></script>
 </body>
 </html>

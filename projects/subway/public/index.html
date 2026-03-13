@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D AI 서브웨이 시뮬레이터</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Game Canvas -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- Crosshair -->
+    <div id="crosshair"></div>
+
+    <!-- UI Overlays (HUD) -->
+    <div id="hud">
+        <div class="top-bar">
+            <div class="logo">SUBWAY <span>3D</span></div>
+            <div class="stats">
+                <div class="stat-item">수익: <span id="revenue">0원</span></div>
+                <div class="stat-item">청결도: <div class="mini-bar"><div id="clean-fill"></div></div></div>
+            </div>
+        </div>
+
+        <!-- Instructions / Controls -->
+        <div id="controls-hint" class="glass">
+            [WASD] 이동 | [Click] 상호작용 | [Esc] 메뉴
+        </div>
+
+        <!-- Customer Chat -->
+        <div id="chat-overlay" class="hidden">
+            <div class="chat-bubble glass">
+                <strong id="customer-name">손님</strong>
+                <p id="customer-dialogue">"주문하시겠어요?"</p>
+            </div>
+        </div>
+
+        <!-- Current Tray Status -->
+        <div id="tray-hud" class="glass">
+            <h3>현재 트레이</h3>
+            <div id="tray-list">빵을 선택하세요.</div>
+            <button id="submit-btn" class="submit-btn" disabled>주문 완료 (Enter)</button>
+        </div>
+
+        <!-- Loading / Start Screen -->
+        <div id="overlay-screen">
+            <div class="modal glass">
+                <h1>AI Subway Simulator 3D</h1>
+                <p>로블록스 스타일 서브웨이 알바 게임</p>
+                <button id="start-btn" class="primary-btn">게임 시작</button>
+                <div class="instructions">
+                    WASD: 이동 | Mouse: 시점 조작 | 좌클릭: 재료 집기
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evaluation Result Overlay -->
+    <div id="result-overlay" class="overlay hidden">
+        <div class="result-card glass">
+            <h2>평가 결과</h2>
+            <div class="score-display"><span id="final-score">0</span>점</div>
+            <p id="evaluation-feedback"></p>
+            <button id="close-result-btn" class="primary-btn">다음 손님 준비</button>
+        </div>
+    </div>
+
+    <!-- Import Map for Three.js (Simplified for local use) -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+    <script type="module" src="script.js"></script>
+</body>
+</html>
