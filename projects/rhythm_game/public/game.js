@@ -66,7 +66,8 @@ let userSettings = {
     offset: parseInt(localStorage.getItem('sr_offset') || '0'), 
     judgZ: parseFloat(localStorage.getItem('sr_judgZ') || '6'),
     seVol: parseInt(localStorage.getItem('sr_seVol') || '50'),
-    musicVol: parseInt(localStorage.getItem('sr_mVol') || '80')
+    musicVol: parseInt(localStorage.getItem('sr_mVol') || '80'),
+    theme: localStorage.getItem('sr_theme') || 'cyberpunk'
 };
 
 // --- 3D ENGINE (THREE.JS) ---
@@ -81,7 +82,7 @@ const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerH
 camera.position.set(0, 20, 35);
 camera.lookAt(0, 2, -10);
 
-const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
+const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 
@@ -268,6 +269,7 @@ document.getElementById('settings-open-btn').addEventListener('click', () => {
     document.getElementById('val-vol').innerText = userSettings.seVol;
     document.getElementById('set-mvol').value = userSettings.musicVol;
     document.getElementById('val-mvol').innerText = userSettings.musicVol;
+    document.getElementById('set-theme').value = userSettings.theme;
     
     showScreen('settings');
 });
@@ -363,27 +365,154 @@ document.getElementById('set-mvol').addEventListener('input', (e) => {
     if (audio) audio.volume = userSettings.musicVol / 100;
 });
 
+document.getElementById('set-theme').addEventListener('change', (e) => {
+    userSettings.theme = e.target.value;
+    localStorage.setItem('sr_theme', userSettings.theme);
+    applyTheme(userSettings.theme);
+});
+
+function applyTheme(theme) {
+    if (theme === 'kawaii') {
+        document.body.classList.add('theme-kawaii');
+        // Update 3D scene for Kawaii theme
+        scene.fog.density = 0; // Completely disable fog in lobby to keep background white
+        scene.fog.color.setHex(0xffffff); 
+        renderer.setClearColor(0x000000, 0); 
+        renderer.setClearAlpha(0);
+        
+        gridHelper.material.color.setHex(0xffb6c1);
+        gridHelper.material.opacity = 0.5;
+        ambientLight.intensity = 1.4;
+        dirLight.intensity = 1.8;
+        // Update lane colors for Kawaii theme
+        const kawaiiColors = [0xf472b6, 0x60a5fa, 0x60a5fa, 0xf472b6];
+        trackMats.forEach((mat, i) => {
+            mat.color.setHex(kawaiiColors[i]);
+            mat.opacity = 0.4;
+        });
+        keyHighlightMeshes.forEach((mesh, i) => {
+            mesh.material.color.setHex(kawaiiColors[i]);
+        });
+    } else {
+        document.body.classList.remove('theme-kawaii');
+        scene.fog.density = 0.02; // Restore deep fog
+        scene.fog.color.setHex(0x050014);
+        renderer.setClearColor(0x050014, 1);
+        renderer.setClearAlpha(1);
+        
+        gridHelper.material.color.setHex(0x440044);
+        gridHelper.material.opacity = 1.0; // GridHelper doesn't have opacity in MeshBasicMaterial usually but we will see
+        ambientLight.intensity = 0.5;
+        dirLight.intensity = 1.0;
+        // Restore lane colors
+        const originalColors = [0xFF00FF, 0x00FFFF, 0x00FFFF, 0xFF00FF];
+        trackMats.forEach((mat, i) => {
+            mat.color.setHex(originalColors[i]);
+            mat.opacity = 0.2;
+        });
+        keyHighlightMeshes.forEach((mesh, i) => {
+            mesh.material.color.setHex(originalColors[i]);
+        });
+    }
+}
+
+// Apply initial theme
+applyTheme(userSettings.theme);
+
+// Pixel sparkles randomization
+setInterval(() => {
+    if (userSettings.theme === 'kawaii') {
+        document.querySelectorAll('.pixel-sparkle').forEach(sparkle => {
+            const x = (Math.random() - 0.5) * 100;
+            const y = (Math.random() - 0.5) * 100;
+            sparkle.style.transform = `translate(${x}px, ${y}px) scale(${0.5 + Math.random()})`;
+            sparkle.style.transition = 'transform 5s ease-in-out';
+        });
+    }
+}, 5000);
+
 // --- INITIALIZATION ---
+let songsData = [];
+let currentSongIndex = 0;
+
 async function fetchSongs() {
     try {
         const res = await fetch('/api/songs');
         if (!res.ok) throw new Error('API down');
-        const songs = await res.json();
+        songsData = await res.json();
         
-        const songList = document.getElementById('song-list');
-        songList.innerHTML = '';
-        
-        songs.forEach(song => {
-            const card = document.createElement('div');
-            card.className = 'song-card';
-            card.innerHTML = `<h2>${song.name}</h2>`;
-            card.onclick = () => loadSong(song.id);
-            songList.appendChild(card);
-        });
+        if (songsData.length > 0) {
+            updateActiveSongUI(0);
+        }
     } catch (e) {
         showError(e.message);
     }
 }
+
+function updateActiveSongUI(index) {
+    if (index < 0 || index >= songsData.length) return;
+    currentSongIndex = index;
+    const song = songsData[index];
+    
+    document.getElementById('active-song-title').innerText = song.name;
+    document.getElementById('active-song-artist').innerText = song.artist || "UNKNOWN ARTIST";
+    // If there's an artwork URL in the future, update it here
+    // document.getElementById('song-artwork').src = song.artwork || 'default.png';
+    
+    // We'll load the song data (beatmap) to get BPM and duration
+    loadSongPreview(song.id);
+}
+
+document.getElementById('prev-btn').addEventListener('click', () => {
+    let nextIndex = (currentSongIndex - 1 + songsData.length) % songsData.length;
+    updateActiveSongUI(nextIndex);
+});
+
+document.getElementById('next-btn').addEventListener('click', () => {
+    let nextIndex = (currentSongIndex + 1) % songsData.length;
+    updateActiveSongUI(nextIndex);
+});
+
+async function loadSongPreview(songId) {
+    try {
+        const res = await fetch(`songs/${songId}/beatmap.json`);
+        const previewMap = await res.json();
+        
+        document.getElementById('stat-bpm').innerText = previewMap.bpm || '???';
+        
+        // Duration calculation
+        if (previewMap.notes.length > 0) {
+            const lastNote = previewMap.notes[previewMap.notes.length - 1];
+            const totalSec = Math.ceil(lastNote.time + (lastNote.duration || 0));
+            const mins = Math.floor(totalSec / 60);
+            const secs = totalSec % 60;
+            document.getElementById('stat-duration').innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        } else {
+            document.getElementById('stat-duration').innerText = '00:00';
+        }
+        
+        // Placeholder for Personal Best
+        document.getElementById('stat-pb').innerText = '---,---';
+        
+    } catch (e) {
+        console.error('Preview load failed', e);
+    }
+}
+
+document.getElementById('game-start').addEventListener('click', () => {
+    if (songsData.length > 0) {
+        loadSong(songsData[currentSongIndex].id);
+    }
+});
+
+// Difficulty Selection Logic
+document.querySelectorAll('.diff-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        // In the future, this would change the beatmap or multiplier
+    });
+});
 
 async function loadSong(songId) {
     currentSongId = songId;

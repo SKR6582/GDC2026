@@ -27,23 +27,89 @@
             
             <!-- Song Selection Screen -->
             <div id="song-select-screen" class="screen active">
-                <div class="header glitch-container">
-                    <h1 class="glitch" data-text="DANCING ARROW">DANCING ARROW</h1>
-                    <p class="blink">🌟 SELECT YOUR TRACK 🌟</p>
+                <div class="decorative-header">
+                    <div class="header-decoration">
+                        <span class="deco-icon">✿</span>
+                        <div class="deco-line"></div>
+                        <h2 class="stage-select-label">STAGE SELECTION</h2>
+                        <div class="deco-line"></div>
+                        <span class="deco-icon">✿</span>
+                    </div>
                 </div>
                 
-                <div class="viewport-wrapper">
+                <section class="song-carousel-section">
                     <button id="prev-btn" class="nav-btn">&lt;</button>
                     <div id="song-carousel">
-                        <div id="song-list"></div>
+                        <div id="active-song-card" class="song-card animate-breathing">
+                            <div class="song-artwork-container shadow-inner">
+                                <img id="song-artwork" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpP_JLCB5SadYlaGAH7WaHAWYXfP5my9bGd-oaZYN0XUWUUixNhCUey2VhGyu-Vuwp7-OHS8IsqFjILPvcvEsWS65ilhWfrMby3VfCV61EmJGY-LCivm2NGG4RSK9J21xgj_N-HuJOd6zaTJeVDA8ta0yYNp_AVQZqqrMffm9Es3O4UJT8fbcij5Ti3VJoqkEmOgUfyZnuFQMezIvx7CwFivbPpEE5LMzPjDx9EXG32IU5-yNIsLSf1fh9a97mZv4gjAMByx9sB8BG" alt="Song Artwork">
+                                <div class="artwork-overlay"></div>
+                            </div>
+                            <div class="song-titles">
+                                <h2 id="active-song-title">Fuwafuwa Time</h2>
+                                <p id="active-song-artist">FUWAMY & MOCOLY</p>
+                            </div>
+                        </div>
                     </div>
                     <button id="next-btn" class="nav-btn">&gt;</button>
+                </section>
+
+                <div class="song-info-grid">
+                    <div id="song-stats-panel" class="info-panel">
+                        <div class="stat-header">
+                            <h3 class="panel-title">✿ SONG STATS</h3>
+                            <span class="sync-badge">DATA_SYNC_ACTIVE</span>
+                        </div>
+                        <div class="stats-list">
+                            <div class="stat-row">
+                                <span class="label"><span class="dot"></span> BEATS PER MINUTE</span>
+                                <span id="stat-bpm" class="value">175</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="label"><span class="dot"></span> TRACK DURATION</span>
+                                <span id="stat-duration" class="value">02:14</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="label"><span class="dot"></span> PERSONAL BEST</span>
+                                <span id="stat-pb" class="value">985,200</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="difficulty-selection">
+                        <button class="diff-btn squishy-btn easy" data-diff="easy">
+                            <span>EASY</span>
+                            <span class="stars">☆☆☆</span>
+                        </button>
+                        <button class="diff-btn squishy-btn normal active" data-diff="normal">
+                            <span>NORMAL</span>
+                            <span class="stars">★★★</span>
+                        </button>
+                        <button class="diff-btn squishy-btn hard" data-diff="hard">
+                            <span>HARD</span>
+                            <span class="stars">★★★★★</span>
+                        </button>
+                    </div>
                 </div>
                 
-                <div class="footer-info">
-                    <button id="settings-open-btn" class="action-btn" style="padding: 10px 20px; font-size: 0.8rem; margin-bottom: 20px;">⚙️ OPTIONS</button>
-                    <br>
-                    <p>SYSTEM READY // INSERT COIN</p>
+                <div class="footer-actions">
+                    <button id="game-start" class="squishy-btn start-button group">
+                        <span class="btn-text">GAME START</span>
+                        <svg class="play-icon" fill="none" stroke="currentColor" stroke-width="4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                        <div class="shine"></div>
+                    </button>
+
+                    <div class="footer-meta">
+                        <div class="meta-deco"><span>✦</span><span>✿</span><span>✦</span></div>
+                        <div class="meta-badges">
+                            <span class="meta-badge">ver. 3.0</span>
+                            <span class="meta-badge">system.ultra</span>
+                        </div>
+                    </div>
+
+                    <button id="settings-open-btn" class="settings-btn">⚙️</button>
                 </div>
             </div>
 
@@ -110,6 +176,14 @@
                     <h2 class="glitch" data-text="OPTIONS" style="font-size: 2.5rem; margin-bottom: 30px;">OPTIONS</h2>
                     
                     <div class="setting-row">
+                        <label>Display Theme:</label>
+                        <select id="set-theme" style="background: rgba(0,0,0,0.5); color: white; border: 1px solid var(--neon-cyan); padding: 5px; border-radius: 5px; font-family: 'Outfit', sans-serif;">
+                            <option value="cyberpunk">Cyberpunk</option>
+                            <option value="kawaii">Kawaii Deluxe</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-row">
                         <label title="Delay between audio and notes (ms)">Audio Offset (ms): <span id="val-offset">0</span></label>
                         <input type="range" id="set-offset" min="-500" max="500" value="0">
                     </div>
@@ -162,6 +236,37 @@
             </div>
         </div>
     </div>
+
+    <!-- Kawaii Background Elements -->
+    <div id="kawaii-bg-container">
+        <div class="fur-overlay"></div>
+        <div class="cloud-shape cloud-1 animate-drift"></div>
+        <div class="cloud-shape cloud-2 animate-drift"></div>
+        
+        <!-- Paws & Hearts -->
+        <div class="kawaii-deco heart-1 animate-bounce">♥</div>
+        <div class="kawaii-deco heart-2 animate-bounce">♥</div>
+        <div class="kawaii-deco paw-1 animate-drift">🐾</div>
+        <div class="kawaii-deco paw-2 animate-drift">🐾</div>
+        <div class="kawaii-deco paw-3 animate-drift">🐾</div>
+        <div class="kawaii-deco heart-3 animate-pulse">♥</div>
+        
+        <!-- Music Notes & Sparkles -->
+        <div class="kawaii-deco note-1 animate-drift">♪</div>
+        <div class="kawaii-deco note-2 animate-drift">♫</div>
+        
+        <!-- Sparkles -->
+        <div class="pixel-sparkle spark-1"></div>
+        <div class="pixel-sparkle spark-2"></div>
+        <div class="pixel-sparkle spark-3"></div>
+        <div class="pixel-sparkle spark-4"></div>
+        <div class="pixel-sparkle spark-5"></div>
+        <div class="pixel-sparkle spark-6"></div>
+        <div class="pixel-sparkle spark-7"></div>
+    </div>
+
+    <!-- Additional Fonts for Kawaii Theme -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
 
     <!-- SE Synth and Game Logic -->
     <script src="game.js"></script>

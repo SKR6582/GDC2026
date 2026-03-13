@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Fuwamoco Rhythm Selection - Kawaii Deluxe Edition</title>
+    <!-- Tailwind CSS CDN with plugins -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Google Fonts for rounded typography -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <style data-purpose="base-typography">
+        body {
+            font-family: 'Quicksand', sans-serif;
+            overflow-x: hidden;
+            cursor: url('https://api.iconify.design/fluent-emoji:paw-prints.svg?height=24'), auto;
+        }
+    </style>
+    <style data-purpose="kawaii-effects">
+        /* Soft fur texture overlay */
+        .fur-overlay {
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Extra Puffy Marshmallow Shadows & Glow */
+        .marshmallow-shadow-puffy {
+            box-shadow: 0 25px 60px -15px rgba(255, 182, 193, 0.5),
+                0 0 40px rgba(255, 255, 255, 0.4),
+                inset 0 4px 12px rgba(255, 255, 255, 0.9),
+                inset 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Layered Glassmorphism with Inner Glow */
+        .plush-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(20px);
+            border: 4px solid rgba(255, 255, 255, 0.85);
+            border-radius: 50px;
+            position: relative;
+        }
+
+        .plush-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50px;
+            background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.8), transparent 70%);
+            pointer-events: none;
+        }
+
+        /* Breathing & Floating Animations */
+        @keyframes breathing {
+
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+
+            50% {
+                transform: translateY(-15px) scale(1.02);
+            }
+        }
+
+        .animate-breathing {
+            animation: breathing 6s ease-in-out infinite;
+        }
+
+        @keyframes drift {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            33% {
+                transform: translate(25px, -30px) rotate(8deg);
+            }
+
+            66% {
+                transform: translate(-20px, 20px) rotate(-8deg);
+            }
+
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+        }
+
+        .animate-drift {
+            animation: drift 12s ease-in-out infinite;
+        }
+
+        @keyframes slow-spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .animate-slow-spin {
+            animation: slow-spin 20s linear infinite;
+        }
+
+        /* Squishy button enhancement */
+        .squishy-btn {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.4);
+        }
+
+        .squishy-btn:active {
+            transform: scale(0.85) translateY(5px);
+        }
+
+        .squishy-btn:hover {
+            transform: scale(1.03) translateY(-3px);
+        }
+
+        /* Pixel Sparkles */
+        .pixel-sparkle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            box-shadow: 0 0 8px #fff, 0 0 12px #ffdee9;
+            animation: pixelPulse 2s infinite alternate;
+        }
+
+        @keyframes pixelPulse {
+            0% {
+                opacity: 0.2;
+                transform: scale(0.5);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        /* Background Pattern */
+        .bg-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 30c0-5.523-4.477-10-10-10s-10 4.477-10 10 4.477 10 10 10 10-4.477 10-10z' fill='%23ffb6c1' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
+
+        .cloud-shape {
+            background: white;
+            border-radius: 50px;
+            filter: blur(30px);
+            opacity: 0.5;
+            position: absolute;
+        }
+    </style>
+    <style data-purpose="background-gradient">
+        .bg-soft-gradient {
+            background: radial-gradient(circle at 10% 10%, #FFDEE9 0%, transparent 40%),
+                radial-gradient(circle at 90% 10%, #B5FFFC 0%, transparent 40%),
+                radial-gradient(circle at 50% 90%, #E2E2FF 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, #FFE4E1 0%, transparent 30%),
+                #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body class="bg-soft-gradient bg-pattern">
+    <div class="fur-overlay"></div>
+    <!-- BEGIN: Denser Dynamic Background Elements -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <!-- Cloud Shapes -->
+        <div class="cloud-shape w-96 h-32 top-10 -left-20 animate-drift"></div>
+        <div class="cloud-shape w-80 h-40 bottom-20 -right-10 animate-drift" style="animation-delay: -3s;"></div>
+        <!-- Bubbles/Fluff -->
+        <div class="particle animate-drift text-pink-200/50 text-9xl"
+            style="top: 5%; left: 2%; animation-duration: 18s;">●</div>
+        <div class="particle animate-drift text-blue-200/40 text-8xl"
+            style="top: 70%; left: 80%; animation-duration: 22s; animation-delay: -4s;">●</div>
+        <div class="particle animate-drift text-purple-200/50 text-[14rem]"
+            style="top: 30%; left: -5%; animation-duration: 30s; animation-delay: -8s;">●</div>
+        <div class="particle animate-drift text-pink-100/40 text-7xl"
+            style="top: 15%; left: 85%; animation-duration: 15s;">●</div>
+        <!-- Hearts & Paws -->
+        <div class="absolute text-pink-300/40 text-6xl animate-bounce"
+            style="top: 10%; left: 25%; animation-duration: 4s;">♥</div>
+        <div class="absolute text-purple-300/40 text-4xl animate-bounce"
+            style="top: 85%; left: 15%; animation-duration: 5s; animation-delay: 1s;">♥</div>
+        <div class="absolute text-blue-300/30 text-5xl animate-drift" style="top: 45%; left: 90%;">🐾</div>
+        <div class="absolute text-pink-200/40 text-7xl animate-drift" style="top: 65%; left: 5%; animation-delay: -2s;">
+            🐾</div>
+        <div class="absolute text-yellow-200/50 text-4xl animate-pulse" style="top: 5%; left: 60%;">♥</div>
+        <div class="absolute text-pink-200/40 text-5xl animate-pulse" style="top: 40%; left: 75%;">♥</div>
+        <!-- Stars -->
+        <div class="particle text-pink-400 text-3xl animate-pulse" style="top: 8%; left: 15%; animation-delay: 0s;">✦
+        </div>
+        <div class="particle text-blue-400 text-2xl animate-pulse" style="top: 22%; left: 82%; animation-delay: 2.5s;">✦
+        </div>
+        <div class="particle text-purple-400 text-4xl animate-pulse"
+            style="top: 72%; left: 12%; animation-delay: 1.2s;">✦</div>
+        <div class="particle text-pink-300 text-5xl animate-pulse" style="top: 88%; left: 92%; animation-delay: 3.8s;">✦
+        </div>
+        <div class="particle text-yellow-300 text-2xl animate-pulse"
+            style="top: 55%; left: 45%; animation-delay: 0.5s;">✦</div>
+        <!-- Music Notes -->
+        <div class="absolute text-pink-300/30 text-4xl animate-drift" style="top: 15%; left: 40%;">♪</div>
+        <div class="absolute text-purple-300/30 text-5xl animate-drift" style="top: 75%; left: 65%;">♫</div>
+        <div class="absolute text-blue-300/30 text-3xl animate-drift" style="top: 35%; left: 15%;">♬</div>
+        <!-- Pixel Sparkles (Scattered) -->
+        <div class="pixel-sparkle" style="top: 12%; left: 35%;"></div>
+        <div class="pixel-sparkle" style="top: 45%; left: 15%;"></div>
+        <div class="pixel-sparkle" style="top: 78%; left: 42%;"></div>
+        <div class="pixel-sparkle" style="top: 25%; left: 68%;"></div>
+        <div class="pixel-sparkle" style="top: 60%; left: 88%;"></div>
+        <div class="pixel-sparkle" style="top: 5%; left: 90%;"></div>
+        <div class="pixel-sparkle" style="top: 92%; left: 10%;"></div>
+    </div>
+    <!-- END: Denser Dynamic Background Elements -->
+    <main class="relative z-20 w-full max-w-7xl px-4 flex flex-col items-center py-10">
+        <!-- Decorative Header -->
+        <div class="relative mb-8 text-center">
+            <div class="absolute -top-6 left-1/2 -translate-x-1/2 flex items-center gap-4 whitespace-nowrap">
+                <span class="text-pink-300 text-2xl">✿</span>
+                <div class="w-16 h-1 bg-gradient-to-r from-transparent to-pink-300 rounded-full"></div>
+                <span
+                    class="text-pink-500 font-bold tracking-[0.4em] text-xs uppercase bg-white/50 px-4 py-1 rounded-full backdrop-blur-sm">Stage
+                    Selection</span>
+                <div class="w-16 h-1 bg-gradient-to-l from-transparent to-pink-300 rounded-full"></div>
+                <span class="text-pink-300 text-2xl">✿</span>
+            </div>
+        </div>
+        <!-- Song Selection Carousel -->
+        <section class="w-full mb-12 flex items-center justify-center gap-8 lg:gap-12" data-purpose="carousel">
+            <!-- Previous Card -->
+            <div
+                class="hidden lg:flex w-56 h-72 plush-card opacity-40 scale-75 -rotate-6 flex-col items-center justify-center p-4 marshmallow-shadow-puffy group transition-all">
+                <div class="w-full h-3/4 rounded-[35px] bg-purple-100 mb-2 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
+                </div>
+                <div class="h-4 w-2/3 bg-purple-200/50 rounded-full"></div>
+            </div>
+            <!-- Active Card -->
+            <div class="relative group">
+                <!-- Extra Floating Decos around card -->
+                <div class="absolute -top-10 -right-10 text-pink-400 text-4xl animate-bounce pointer-events-none">♥
+                </div>
+                <div class="absolute -bottom-6 -left-8 text-blue-400 text-3xl animate-drift pointer-events-none"
+                    style="animation-delay: -1s;">🐾</div>
+                <div class="absolute top-1/2 -left-12 text-purple-400 text-2xl animate-pulse pointer-events-none">✦
+                </div>
+                <div class="w-80 sm:w-96 h-[32rem] plush-card animate-breathing marshmallow-shadow-puffy flex flex-col p-8 cursor-pointer group"
+                    data-purpose="active-song-card">
+                    <div
+                        class="absolute inset-0 bg-pink-100/10 blur-2xl rounded-[50px] opacity-50 group-hover:opacity-100 transition-opacity">
+                    </div>
+                    <div
+                        class="relative w-full aspect-square rounded-[50px] bg-gradient-to-br from-pink-100 via-white to-blue-50 mb-6 overflow-hidden border-8 border-white/90 shadow-[inset_0_4px_12px_rgba(0,0,0,0.05)]">
+                        <div class="absolute top-4 right-4 text-white/60 text-xl z-10 drop-shadow-sm">★</div>
+                        <img alt="Song Artwork"
+                            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpP_JLCB5SadYlaGAH7WaHAWYXfP5my9bGd-oaZYN0XUWUUixNhCUey2VhGyu-Vuwp7-OHS8IsqFjILPvcvEsWS65ilhWfrMby3VfCV61EmJGY-LCivm2NGG4RSK9J21xgj_N-HuJOd6zaTJeVDA8ta0yYNp_AVQZqqrMffm9Es3O4UJT8fbcij5Ti3VJoqkEmOgUfyZnuFQMezIvx7CwFivbPpEE5LMzPjDx9EXG32IU5-yNIsLSf1fh9a97mZv4gjAMByx9sB8BG" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-pink-200/20 to-transparent"></div>
+                    </div>
+                    <div class="text-center relative">
+                        <h2 class="text-3xl font-bold text-pink-600 mb-2 drop-shadow-sm">Fuwafuwa Time</h2>
+                        <div class="flex items-center justify-center gap-3">
+                            <span class="text-purple-300 text-xs">✿</span>
+                            <p class="text-sm font-bold text-purple-400 tracking-[0.2em] uppercase">FUWAMY &amp; MOCOLY
+                            </p>
+                            <span class="text-purple-300 text-xs">✿</span>
+                        </div>
+                    </div>
+                    <div
+                        class="absolute -bottom-5 -right-5 w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg border-4 border-pink-100 text-pink-400 font-bold text-xl marshmallow-shadow-puffy transition-transform group-hover:rotate-12">
+                        ♫</div>
+                </div>
+            </div>
+            <!-- Next Card -->
+            <div
+                class="hidden lg:flex w-56 h-72 plush-card opacity-40 scale-75 rotate-6 flex-col items-center justify-center p-4 marshmallow-shadow-puffy group transition-all">
+                <div class="w-full h-3/4 rounded-[35px] bg-pink-100 mb-2 relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
+                </div>
+                <div class="h-4 w-2/3 bg-pink-200/50 rounded-full"></div>
+            </div>
+        </section>
+        <!-- Song Info & Difficulty -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-10 w-full max-w-5xl relative"
+            data-purpose="selection-details">
+            <!-- Decorative icons floating near panels -->
+            <div class="absolute -left-12 top-0 text-pink-300 text-3xl animate-bounce">♬</div>
+            <div class="absolute -right-12 bottom-0 text-blue-300 text-3xl animate-bounce"
+                style="animation-delay: -2s;">🐾</div>
+            <!-- Song Info Panel -->
+            <div class="plush-card marshmallow-shadow-puffy p-10 flex flex-col justify-center text-gray-600 relative overflow-hidden"
+                data-purpose="song-info-panel">
+                <div class="absolute top-0 right-0 p-4 opacity-10">
+                    <div class="text-6xl text-pink-500">✿</div>
+                </div>
+                <h3 class="text-xl font-bold text-pink-500 mb-6 flex items-center justify-between relative z-10">
+                    <span class="flex items-center"><span class="mr-3 text-2xl">✿</span> SONG STATS</span>
+                    <span
+                        class="text-[10px] bg-pink-100 text-pink-500 px-3 py-1.5 rounded-full tracking-wider font-black shadow-sm">DATA_SYNC_ACTIVE</span>
+                </h3>
+                <div class="space-y-5 relative z-10">
+                    <div
+                        class="flex justify-between items-center group/item p-2 rounded-2xl transition-colors hover:bg-pink-50/50">
+                        <span
+                            class="font-bold text-gray-400 group-hover/item:text-pink-400 transition-colors flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-pink-200"></span> BEATS PER MINUTE
+                        </span>
+                        <span
+                            class="text-2xl font-black text-pink-500 bg-white/80 px-4 py-1 rounded-2xl shadow-sm border border-pink-50">175</span>
+                    </div>
+                    <div
+                        class="flex justify-between items-center group/item p-2 rounded-2xl transition-colors hover:bg-blue-50/50">
+                        <span
+                            class="font-bold text-gray-400 group-hover/item:text-blue-400 transition-colors flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-blue-200"></span> TRACK DURATION
+                        </span>
+                        <span
+                            class="text-2xl font-black text-pink-500 bg-white/80 px-4 py-1 rounded-2xl shadow-sm border border-blue-50">02:14</span>
+                    </div>
+                    <div
+                        class="flex justify-between items-center group/item p-2 rounded-2xl transition-colors hover:bg-purple-50/50">
+                        <span
+                            class="font-bold text-gray-400 group-hover/item:text-purple-400 transition-colors flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-purple-200"></span> PERSONAL BEST
+                        </span>
+                        <span
+                            class="text-2xl font-black text-purple-500 bg-white/80 px-4 py-1 rounded-2xl shadow-sm border border-purple-50">985,200</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Difficulty Selection -->
+            <div class="flex flex-col gap-5 justify-center relative" data-purpose="difficulty-selection">
+                <button
+                    class="squishy-btn group w-full py-5 rounded-[30px] bg-white/80 text-blue-400 font-black text-lg border-4 border-blue-50 marshmallow-shadow-puffy flex items-center justify-between px-8 relative overflow-hidden">
+                    <span class="relative z-10">EASY</span>
+                    <span
+                        class="opacity-30 group-hover:opacity-100 transition-opacity text-blue-200 relative z-10">☆☆☆</span>
+                    <div
+                        class="absolute inset-0 bg-blue-50/50 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                    </div>
+                </button>
+                <button
+                    class="squishy-btn group w-full py-6 rounded-[40px] bg-gradient-to-r from-pink-400 to-rose-400 text-white font-black text-2xl border-6 border-white marshmallow-shadow-puffy scale-105 ring-[12px] ring-pink-100/50 flex items-center justify-between px-10 relative shadow-[0_15px_30px_-5px_rgba(244,114,182,0.4)]">
+                    <span class="drop-shadow-md">NORMAL</span>
+                    <div class="flex gap-1 drop-shadow-md">
+                        <span class="text-white">★</span><span class="text-white">★</span><span
+                            class="text-white">★</span>
+                    </div>
+                    <!-- Internal Shine -->
+                    <div
+                        class="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-white/20 pointer-events-none">
+                    </div>
+                </button>
+                <button
+                    class="squishy-btn group w-full py-5 rounded-[30px] bg-white/80 text-purple-400 font-black text-lg border-4 border-purple-50 marshmallow-shadow-puffy flex items-center justify-between px-8 relative overflow-hidden">
+                    <span class="relative z-10">HARD</span>
+                    <span
+                        class="opacity-30 group-hover:opacity-100 transition-opacity text-purple-200 relative z-10">★★★★★</span>
+                    <div
+                        class="absolute inset-0 bg-purple-50/50 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                    </div>
+                </button>
+            </div>
+        </section>
+        <!-- Footer Actions -->
+        <div class="mt-16 w-full flex flex-col items-center gap-8 pb-12 relative">
+            <!-- Decorative Hearts Around Start Button -->
+            <div class="absolute -left-20 top-0 text-pink-200 text-6xl animate-pulse">♥</div>
+            <div class="absolute -right-20 bottom-10 text-blue-200 text-6xl animate-pulse"
+                style="animation-delay: 1.5s;">♥</div>
+            <button
+                class="squishy-btn px-24 py-8 bg-gradient-to-br from-pink-400 via-rose-400 to-purple-400 text-white text-4xl font-black rounded-full marshmallow-shadow-puffy border-[10px] border-white hover:brightness-110 tracking-[0.15em] flex items-center gap-6 relative overflow-hidden group shadow-[0_30px_60px_-10px_rgba(244,114,182,0.6)]"
+                id="game-start">
+                <span class="relative z-10 drop-shadow-md">GAME START</span>
+                <svg class="w-12 h-12 relative z-10 transition-transform group-hover:translate-x-3 drop-shadow-md"
+                    fill="none" stroke="currentColor" stroke-width="4" viewbox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"
+                        stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+                <!-- Intense Glossy shine -->
+                <div
+                    class="absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/50 to-transparent skew-x-[-25deg] group-hover:left-[150%] transition-all duration-1000 ease-in-out">
+                </div>
+            </button>
+            <!-- Labels with Decos -->
+            <div class="flex flex-col items-center gap-4">
+                <div class="flex gap-4 text-pink-300">
+                    <span>✦</span><span>✿</span><span>✦</span>
+                </div>
+                <div
+                    class="flex flex-wrap justify-center gap-8 text-[11px] font-black text-pink-400/70 tracking-[0.4em] uppercase">
+                    <span class="bg-white/40 px-3 py-1 rounded-full">ver. fuwamoco_kawaii_3.0</span>
+                    <span class="bg-white/40 px-3 py-1 rounded-full">system.ultra_soft</span>
+                    <span class="bg-white/40 px-3 py-1 rounded-full">vibe.maximum</span>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script data-purpose="ui-interactivity">
+        // Visual feedback for button clicks
+        document.querySelectorAll('.squishy-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const ripple = document.createElement('div');
+                ripple.className = 'absolute inset-0 bg-white/60 rounded-full animate-ping pointer-events-none z-50';
+                btn.appendChild(ripple);
+
+                // Spawn hearts on click
+                for (let i = 0; i < 3; i++) {
+                    const heart = document.createElement('div');
+                    heart.innerHTML = '♥';
+                    heart.className = 'absolute text-pink-400 pointer-events-none z-50 text-xl animate-bounce';
+                    heart.style.left = `${Math.random() * 100}%`;
+                    heart.style.top = `${Math.random() * 100}%`;
+                    btn.appendChild(heart);
+                    setTimeout(() => heart.remove(), 1000);
+                }
+
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+
+        // Start Button Dynamic Glow
+        const startBtn = document.getElementById('game-start');
+        let intensity = 0;
+        setInterval(() => {
+            intensity = (intensity + 0.05) % (Math.PI * 2);
+            const glowValue = 35 + Math.sin(intensity) * 20;
+            const hueRotate = Math.sin(intensity * 0.4) * 15;
+            startBtn.style.boxShadow = `0 0 ${glowValue}px rgba(251, 113, 133, 0.8), 0 25px 70px -10px rgba(255, 182, 193, 0.6)`;
+            startBtn.style.filter = `hue-rotate(${hueRotate}deg)`;
+        }, 40);
+
+        // Random small pixel sparkles shift
+        setInterval(() => {
+            document.querySelectorAll('.pixel-sparkle').forEach(sparkle => {
+                const x = (Math.random() - 0.5) * 100;
+                const y = (Math.random() - 0.5) * 100;
+                sparkle.style.transform = `translate(${x}px, ${y}px) scale(${0.5 + Math.random()})`;
+                sparkle.style.transition = 'transform 5s ease-in-out';
+            });
+        }, 5000);
+    </script>
+</body>
+
+</html>
