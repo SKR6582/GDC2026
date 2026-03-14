@@ -456,8 +456,8 @@ function updateActiveSongUI(index) {
     
     document.getElementById('active-song-title').innerText = song.name;
     document.getElementById('active-song-artist').innerText = song.artist || "UNKNOWN ARTIST";
-    // If there's an artwork URL in the future, update it here
-    // document.getElementById('song-artwork').src = song.artwork || 'default.png';
+    
+    // Artwork is now a placeholder, no need to set src
     
     // We'll load the song data (beatmap) to get BPM and duration
     loadSongPreview(song.id);
