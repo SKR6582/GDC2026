@@ -62,7 +62,9 @@ app.get('/api/songs', async (req, res) => {
         for (const file of files) {
             const stat = await fs.stat(path.join(songsDir, file));
             if (stat.isDirectory()) {
-                songs.push({ id: file, name: file.replace(/_/g, ' ') });
+                // If the folder starts with '_', the first character becomes a space after the replace.
+                // We'll clean that up with trim().
+                songs.push({ id: file, name: file.replace(/_/g, ' ').trim() });
             }
         }
         res.json(songs);

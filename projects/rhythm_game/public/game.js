@@ -3,6 +3,9 @@
  * Self-contained game engine with Three.js rendering and Web Audio API SE Logic.
  */
 
+// --- GLOBAL CONFIGURATION ---
+const ENABLE_RECORDING = false; // Toggle this to true/false to enable/disable the 'R' key recording feature
+
 // --- SE (SOUND ENGINE) ---
 class SoundEngine {
     constructor() {
@@ -13,7 +16,7 @@ class SoundEngine {
         this.masterVolume.gain.value = this.baseGain;
         this.masterVolume.connect(this.ctx.destination);
     }
-    
+
     setVolume(volPercent) {
         this.baseGain = volPercent / 100;
         this.masterVolume.gain.value = this.baseGain;
@@ -23,25 +26,25 @@ class SoundEngine {
         if (this.ctx.state === 'suspended') this.ctx.resume();
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        
+
         osc.type = type;
         osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-        
+
         gain.gain.setValueAtTime(vol, this.ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
-        
+
         osc.connect(gain);
         gain.connect(this.masterVolume);
-        
+
         osc.start();
         osc.stop(this.ctx.currentTime + duration);
     }
 
     playHit(judgment) {
         // High energy synths for different judgments
-        switch(judgment) {
+        switch (judgment) {
             case 'PERFECT':
-                this.playTone(880, 'square', 0.1, 0.4); 
+                this.playTone(880, 'square', 0.1, 0.4);
                 setTimeout(() => this.playTone(1760, 'sine', 0.15, 0.3), 20);
                 break;
             case 'GREAT':
@@ -63,7 +66,7 @@ const se = new SoundEngine();
 // --- USER SETTINGS ---
 // User Settings loaded from localStorage early to apply to initialization
 let userSettings = {
-    offset: parseInt(localStorage.getItem('sr_offset') || '0'), 
+    offset: parseInt(localStorage.getItem('sr_offset') || '0'),
     judgZ: parseFloat(localStorage.getItem('sr_judgZ') || '6'),
     seVol: parseInt(localStorage.getItem('sr_seVol') || '50'),
     musicVol: parseInt(localStorage.getItem('sr_mVol') || '80'),
@@ -130,12 +133,12 @@ const jlHeight = 0.05; // Very slim
 const jlDepth = 0.8;
 const jlGeo = new THREE.BoxGeometry(totalWidth, jlHeight, jlDepth);
 // High intensity emissive material
-const jlMat = new THREE.MeshStandardMaterial({ 
-    color: 0xffffff, 
+const jlMat = new THREE.MeshStandardMaterial({
+    color: 0xffffff,
     emissive: 0xffffff,
     emissiveIntensity: 2.0,
-    transparent: true, 
-    opacity: 0.9 
+    transparent: true,
+    opacity: 0.9
 });
 const judgementLine = new THREE.Mesh(jlGeo, jlMat);
 
@@ -152,11 +155,11 @@ scene.add(judgementLine);
 const keyHighlightMeshes = [];
 for (let i = 0; i < laneCount; i++) {
     const hGeo = new THREE.PlaneGeometry(laneWidth - 0.2, 40);
-    const hMat = new THREE.MeshBasicMaterial({ 
+    const hMat = new THREE.MeshBasicMaterial({
         color: laneColors[i],
         transparent: true,
         opacity: 0,
-        blending: THREE.AdditiveBlending 
+        blending: THREE.AdditiveBlending
     });
     const hMesh = new THREE.Mesh(hGeo, hMat);
     hMesh.rotation.x = -Math.PI / 2;
@@ -169,13 +172,13 @@ for (let i = 0; i < laneCount; i++) {
 // Visual Particles System
 const particles = [];
 const particleGeo = new THREE.BoxGeometry(0.2, 0.2, 0.2);
-function spawnParticles(laneIndex, color, count=10) {
+function spawnParticles(laneIndex, color, count = 10) {
     const x = (laneIndex * laneWidth) - (totalWidth / 2) + (laneWidth / 2);
     const mat = new THREE.MeshBasicMaterial({ color: color, blending: THREE.AdditiveBlending });
-    for(let i=0; i<count; i++) {
+    for (let i = 0; i < count; i++) {
         const p = new THREE.Mesh(particleGeo, mat);
         p.position.set(x + (Math.random() - 0.5), 0.5, judgmentZ);
-        p.velocity = new THREE.Vector3((Math.random() - 0.5)*0.5, Math.random()*0.5, (Math.random() - 0.5)*0.5);
+        p.velocity = new THREE.Vector3((Math.random() - 0.5) * 0.5, Math.random() * 0.5, (Math.random() - 0.5) * 0.5);
         p.life = 1.0;
         scene.add(p);
         particles.push(p);
@@ -248,7 +251,7 @@ const screens = {
 function showScreen(screenId) {
     Object.values(screens).forEach(s => s.classList.remove('active'));
     screens[screenId].classList.add('active');
-    
+
     // UI layer specific display handling
     if (screenId === 'settings' || screenId === 'calibration') {
         screens[screenId].style.display = 'flex';
@@ -270,7 +273,7 @@ document.getElementById('settings-open-btn').addEventListener('click', () => {
     document.getElementById('set-mvol').value = userSettings.musicVol;
     document.getElementById('val-mvol').innerText = userSettings.musicVol;
     document.getElementById('set-theme').value = userSettings.theme;
-    
+
     showScreen('settings');
 });
 
@@ -293,7 +296,7 @@ document.getElementById('calib-open-btn').addEventListener('click', () => {
     calibData.startTime = performance.now();
     document.getElementById('calib-offset-val').innerText = '0';
     document.getElementById('calib-tap-count').innerText = '0';
-    
+
     gameState = 'CALIBRATING';
     showScreen('calibration');
 });
@@ -308,7 +311,7 @@ document.getElementById('calib-apply-btn').addEventListener('click', () => {
     localStorage.setItem('sr_offset', userSettings.offset);
     document.getElementById('set-offset').value = userSettings.offset;
     document.getElementById('val-offset').innerText = userSettings.offset;
-    
+
     gameState = 'SONG_SELECT';
     showScreen('settings');
 });
@@ -316,23 +319,23 @@ document.getElementById('calib-apply-btn').addEventListener('click', () => {
 function handleCalibrationTap() {
     const now = performance.now();
     const elapsed = now - calibData.startTime;
-    
+
     // Find closest beat
     const beatIndex = Math.round(elapsed / calibData.interval);
     const intendedTime = beatIndex * calibData.interval;
     const diff = elapsed - intendedTime; // Positive = late, Negative = early
-    
+
     // We want to subtract this diff from the offset
     // If you tap 20ms LATE (diff = 20), we need offset to be -20 so the music plays earlier
     calibData.taps.push(diff);
     if (calibData.taps.length > 20) calibData.taps.shift();
-    
+
     const avg = calibData.taps.reduce((a, b) => a + b, 0) / calibData.taps.length;
     calibData.tempOffset = Math.round(-avg); // Invert because offset is (music - notes), if notes are LATE, avg is positive, so offset should be negative
-    
+
     document.getElementById('calib-offset-val').innerText = calibData.tempOffset;
     document.getElementById('calib-tap-count').innerText = calibData.taps.length;
-    
+
     // Visual feedback
     se.playTone(440, 'triangle', 0.1, 0.3);
 }
@@ -376,10 +379,10 @@ function applyTheme(theme) {
         document.body.classList.add('theme-kawaii');
         // Update 3D scene for Kawaii theme
         scene.fog.density = 0; // Completely disable fog in lobby to keep background white
-        scene.fog.color.setHex(0xffffff); 
-        renderer.setClearColor(0x000000, 0); 
+        scene.fog.color.setHex(0xffffff);
+        renderer.setClearColor(0x000000, 0);
         renderer.setClearAlpha(0);
-        
+
         gridHelper.material.color.setHex(0xffb6c1);
         gridHelper.material.opacity = 0.5;
         ambientLight.intensity = 1.4;
@@ -399,7 +402,7 @@ function applyTheme(theme) {
         scene.fog.color.setHex(0x050014);
         renderer.setClearColor(0x050014, 1);
         renderer.setClearAlpha(1);
-        
+
         gridHelper.material.color.setHex(0x440044);
         gridHelper.material.opacity = 1.0; // GridHelper doesn't have opacity in MeshBasicMaterial usually but we will see
         ambientLight.intensity = 0.5;
@@ -431,45 +434,203 @@ setInterval(() => {
     }
 }, 5000);
 
+// --- PREVIEW MANAGER ---
+const PreviewManager = {
+    audio: null,
+    fadeInterval: null,
+    loopTimeout: null,
+    currentSongId: null,
+
+    async start(songId) {
+        if (this.currentSongId === songId) return;
+        this.stop();
+
+        if (gameState !== 'SONG_SELECT') return;
+        this.currentSongId = songId;
+
+        try {
+            // Priority: preview.cfg -> beatmap.json -> default
+            let start = 30;
+            let duration = 12;
+
+            // Try beatmap.json
+            try {
+                const bRes = await fetch(`songs/${songId}/beatmap.json`);
+                if (bRes.ok) {
+                    const bMap = await bRes.json();
+                    if (bMap.preview) {
+                        start = bMap.preview.start ?? start;
+                        duration = bMap.preview.duration ?? duration;
+                    }
+                }
+            } catch (e) { }
+
+            // Try preview.cfg (Simple key=value format)
+            try {
+                const cRes = await fetch(`songs/${songId}/preview.cfg`);
+                if (cRes.ok) {
+                    const text = await cRes.text();
+                    text.split('\n').forEach(line => {
+                        const [k, v] = line.split('=');
+                        if (k && v) {
+                            const val = parseFloat(v.trim());
+                            if (k.trim().toLowerCase() === 'start') start = val;
+                            if (k.trim().toLowerCase() === 'duration') duration = val;
+                        }
+                    });
+                }
+            } catch (e) { }
+
+            this.audio = new Audio(`songs/${songId}/audio.mp3`);
+
+            // Wait for metadata to ensure seeking works
+            this.audio.addEventListener('loadedmetadata', () => {
+                if (this.currentSongId !== songId) return;
+                this.audio.currentTime = start;
+            });
+
+            this.audio.addEventListener('canplaythrough', () => {
+                if (gameState !== 'SONG_SELECT' || this.currentSongId !== songId) {
+                    this.stop();
+                    return;
+                }
+
+                this.audio.play().catch(e => console.warn("Autoplay blocked or failed", e));
+                this.fadeIn();
+
+                // Loop logic: Fade out slightly before duration ends and restart
+                this.loopTimeout = setTimeout(() => {
+                    if (this.currentSongId === songId) {
+                        this.fadeOut(() => {
+                            if (this.currentSongId === songId) {
+                                // Re-seek and play
+                                if (this.audio) {
+                                    this.audio.currentTime = start;
+                                    this.audio.play();
+                                    this.fadeIn();
+                                }
+                            }
+                        });
+                    }
+                }, duration * 1000);
+            }, { once: true });
+
+        } catch (e) {
+            console.warn('Preview failed to load:', e);
+        }
+    },
+
+    fadeIn() {
+        if (!this.audio) return;
+        clearInterval(this.fadeInterval);
+        let vol = 0;
+        const targetVol = (userSettings.musicVol / 100) * 0.5; // Premium soft preview (50% of music vol)
+        this.audio.volume = 0;
+
+        this.fadeInterval = setInterval(() => {
+            vol += 0.02;
+            if (vol >= targetVol) {
+                vol = targetVol;
+                clearInterval(this.fadeInterval);
+            }
+            if (this.audio) this.audio.volume = vol;
+        }, 30);
+    },
+
+    fadeOut(callback) {
+        if (!this.audio) {
+            if (callback) callback();
+            return;
+        }
+        clearInterval(this.fadeInterval);
+        let vol = this.audio.volume;
+        this.fadeInterval = setInterval(() => {
+            vol -= 0.05;
+            if (vol <= 0) {
+                vol = 0;
+                clearInterval(this.fadeInterval);
+                if (callback) callback();
+            }
+            if (this.audio) this.audio.volume = vol;
+        }, 30);
+    },
+
+    stop() {
+        clearInterval(this.fadeInterval);
+        clearTimeout(this.loopTimeout);
+        if (this.audio) {
+            this.audio.pause();
+            this.audio.src = ""; // Clear source to free memory
+            this.audio = null;
+        }
+        this.currentSongId = null;
+    }
+};
+
 // --- INITIALIZATION ---
-let songsData = [];
+let allSongs = []; // Raw song data from API
+let displaySongs = []; // Filtered songs for UI
 let currentSongIndex = 0;
+let showHiddenSongs = false;
 
 async function fetchSongs() {
     try {
         const res = await fetch('/api/songs');
         if (!res.ok) throw new Error('API down');
-        songsData = await res.json();
-        
-        if (songsData.length > 0) {
-            updateActiveSongUI(0);
-        }
+        allSongs = await res.json();
+
+        updateFilteredSongs();
     } catch (e) {
         showError(e.message);
     }
 }
 
+function updateFilteredSongs() {
+    // Hidden folders start with '_'
+    displaySongs = allSongs.filter(song => {
+        if (showHiddenSongs) return true;
+        return !song.id.startsWith('_');
+    });
+
+    if (displaySongs.length > 0) {
+        // Find if current song is still in the list, otherwise reset to 0
+        if (currentSongIndex >= displaySongs.length) {
+            currentSongIndex = 0;
+        }
+        updateActiveSongUI(currentSongIndex);
+    } else {
+        // Clear UI if no songs
+        document.getElementById('active-song-title').innerText = "NO SONGS FOUND";
+        document.getElementById('active-song-artist').innerText = "---";
+    }
+}
+
 function updateActiveSongUI(index) {
-    if (index < 0 || index >= songsData.length) return;
+    if (index < 0 || index >= displaySongs.length) return;
     currentSongIndex = index;
-    const song = songsData[index];
-    
+    const song = displaySongs[index];
+
     document.getElementById('active-song-title').innerText = song.name;
     document.getElementById('active-song-artist').innerText = song.artist || "UNKNOWN ARTIST";
-    
+
     // Artwork is now a placeholder, no need to set src
-    
+
     // We'll load the song data (beatmap) to get BPM and duration
     loadSongPreview(song.id);
+
+    // Trigger music preview
+    PreviewManager.start(song.id);
 }
 
 document.getElementById('prev-btn').addEventListener('click', () => {
-    let nextIndex = (currentSongIndex - 1 + songsData.length) % songsData.length;
+    if (displaySongs.length === 0) return;
+    let nextIndex = (currentSongIndex - 1 + displaySongs.length) % displaySongs.length;
     updateActiveSongUI(nextIndex);
 });
 
 document.getElementById('next-btn').addEventListener('click', () => {
-    let nextIndex = (currentSongIndex + 1) % songsData.length;
+    if (displaySongs.length === 0) return;
+    let nextIndex = (currentSongIndex + 1) % displaySongs.length;
     updateActiveSongUI(nextIndex);
 });
 
@@ -477,9 +638,9 @@ async function loadSongPreview(songId) {
     try {
         const res = await fetch(`songs/${songId}/beatmap.json`);
         const previewMap = await res.json();
-        
+
         document.getElementById('stat-bpm').innerText = previewMap.bpm || '???';
-        
+
         // Duration calculation
         if (previewMap.notes.length > 0) {
             const lastNote = previewMap.notes[previewMap.notes.length - 1];
@@ -490,18 +651,19 @@ async function loadSongPreview(songId) {
         } else {
             document.getElementById('stat-duration').innerText = '00:00';
         }
-        
+
         // Placeholder for Personal Best
         document.getElementById('stat-pb').innerText = '---,---';
-        
+
     } catch (e) {
         console.error('Preview load failed', e);
     }
 }
 
 document.getElementById('game-start').addEventListener('click', () => {
-    if (songsData.length > 0) {
-        loadSong(songsData[currentSongIndex].id);
+    if (displaySongs.length > 0) {
+        PreviewManager.stop();
+        loadSong(displaySongs[currentSongIndex].id);
     }
 });
 
@@ -519,12 +681,12 @@ async function loadSong(songId) {
     gameState = 'LOADING';
     showScreen('hud');
     displayJudgment('LOADING...', '#fff');
-    
+
     try {
         const res = await fetch(`songs/${songId}/beatmap.json`);
         beatmap = await res.json();
         if (beatmap.bpm) recordBpm = beatmap.bpm;
-        
+
         // Prepare logical notes map
         beatmap.notes.sort((a, b) => a.time - b.time);
         beatmap.notes.forEach((n, idx) => {
@@ -541,16 +703,16 @@ async function loadSong(songId) {
         beatmap.notes.forEach(note => {
             const mat = getNoteMaterial(note.lane);
             let mesh;
-            
+
             if (note.duration && note.duration > 0) {
                 // Hold note
                 const length = note.duration * speed3D;
                 // Slightly thinner on Y for hold notes to distinguish from hit head, but still thick enough
                 const hGeo = new THREE.BoxGeometry(laneWidth - 0.4, 0.8, length);
                 // Shift geometry so origin is at the bottom (startTime) instead of center
-                hGeo.translate(0, 0, -length/2);
+                hGeo.translate(0, 0, -length / 2);
                 mesh = new THREE.Mesh(hGeo, mat);
-                
+
                 // Add Edges for high contrast visibility
                 const edges = new THREE.EdgesGeometry(hGeo);
                 const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 }));
@@ -558,13 +720,13 @@ async function loadSong(songId) {
             } else {
                 // Short note
                 mesh = new THREE.Mesh(noteGeo, mat);
-                
+
                 // Add Edges for high contrast visibility
                 const edges = new THREE.EdgesGeometry(noteGeo);
                 const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 }));
                 mesh.add(line);
             }
-            
+
             const x = (note.lane * laneWidth) - (totalWidth / 2) + (laneWidth / 2);
             mesh.position.set(x, 0, -1000); // Hide far away initially
             scene.add(mesh);
@@ -573,12 +735,12 @@ async function loadSong(songId) {
 
         audio = new Audio(`songs/${songId}/audio.mp3`);
         audio.addEventListener('canplaythrough', () => {
-             if (gameState === 'LOADING') {
-                 gameState = 'READY';
-                 displayJudgment('PRESS SPACE', '#00FFFF');
-             }
-        }, {once: true});
-        
+            if (gameState === 'LOADING') {
+                gameState = 'READY';
+                displayJudgment('PRESS SPACE', '#00FFFF');
+            }
+        }, { once: true });
+
         audio.addEventListener('error', () => {
             if (gameState === 'LOADING') {
                 gameState = 'READY';
@@ -588,9 +750,9 @@ async function loadSong(songId) {
         audio.load();
 
         // Failsafe if canplaythrough doesn't trigger
-        setTimeout(() => { if(gameState==='LOADING') { gameState='READY'; displayJudgment('READY', '#00FFFF'); } }, 1500);
+        setTimeout(() => { if (gameState === 'LOADING') { gameState = 'READY'; displayJudgment('READY', '#00FFFF'); } }, 1500);
 
-    } catch(e) {
+    } catch (e) {
         showError(e.message);
     }
 }
@@ -602,9 +764,34 @@ function showError(msg) {
 }
 
 // --- INPUT & LOGIC ---
+// Hidden command state
+const hiddenCommand = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight'];
+let commandPointer = 0;
+
 window.addEventListener('keydown', e => {
     if (e.repeat) return;
-    
+
+    // Konami-style Hidden Command
+    if (e.key === hiddenCommand[commandPointer]) {
+        commandPointer++;
+        if (commandPointer === hiddenCommand.length) {
+            showHiddenSongs = !showHiddenSongs;
+            updateFilteredSongs();
+            commandPointer = 0;
+
+            // Visual/Sound feedback
+            se.playHit('PERFECT');
+            displayJudgment(showHiddenSongs ? 'HIDDEN ACCESS GRANTED' : 'HIDDEN ACCESS REVOKED', showHiddenSongs ? '#00FFFF' : '#FF00FF');
+            setTimeout(() => {
+                if (gameState === 'SONG_SELECT') {
+                    document.getElementById('judgment-display').classList.remove('show');
+                }
+            }, 2000);
+        }
+    } else {
+        commandPointer = 0;
+    }
+
     // Auto-resume Audio Context for SE (requires user interaction)
     if (se.ctx.state === 'suspended') se.ctx.resume();
 
@@ -616,7 +803,7 @@ window.addEventListener('keydown', e => {
             startGame();
         } else if (gameState === 'END' || gameState === 'RECORD_END') {
             resetGame();
-        } else if (gameState === 'RECORDING') {
+        } else if (ENABLE_RECORDING && gameState === 'RECORDING') {
             endRecording();
         } else if (gameState === 'CALIBRATING') {
             // Space to stop calibration and show result is already handled by Apply but good for shortcut
@@ -629,7 +816,7 @@ window.addEventListener('keydown', e => {
         return;
     }
 
-    if (key === 'r' && gameState === 'READY') {
+    if (ENABLE_RECORDING && key === 'r' && gameState === 'READY') {
         startRecording();
         return;
     }
@@ -675,11 +862,11 @@ function processHit(lane) {
     if (!audio) return;
     // Apply user audio offset (ms to seconds)
     const time = audio.currentTime - (userSettings.offset / 1000);
-    
+
     // Find closest unhit note in lane
     let closest = null;
     let minDiff = Infinity;
-    
+
     for (let note of beatmap.notes) {
         if (note.lane === lane && !note.hit && !note.missed && !note.holdActive) {
             let diff = Math.abs(time - note.time);
@@ -694,11 +881,11 @@ function processHit(lane) {
         if (minDiff <= 0.05) { handleJudgment(closest, 'PERFECT'); }
         else if (minDiff <= 0.1) { handleJudgment(closest, 'GREAT'); }
         else { handleJudgment(closest, 'GOOD'); }
-        
+
         spawnParticles(lane, laneColors[lane], 15);
-        
+
         if (closest.duration > 0) {
-            closest.holdActive = true; 
+            closest.holdActive = true;
         } else {
             closest.hit = true;
             // hide mesh
@@ -717,10 +904,10 @@ function processRelease(lane) {
         if (note.lane === lane && note.holdActive) {
             note.holdActive = false;
             note.hit = true;
-            
+
             const expectedEnd = note.time + note.duration;
             const diff = Math.abs(time - expectedEnd);
-            
+
             const nm = noteMeshes.find(m => m.ref.idx === note.idx);
             if (nm) nm.mesh.visible = false;
 
@@ -760,7 +947,7 @@ function handleJudgment(note, type) {
         const nm = noteMeshes.find(m => m.ref.idx === note.idx);
         if (nm) nm.mesh.material.color.setHex(0x555555);
     }
-    
+
     updateHUD();
     se.playHit(type);
 }
@@ -770,10 +957,10 @@ function updateHUD() {
     const comboEl = document.getElementById('combo-display');
     comboEl.innerText = combo;
     comboEl.setAttribute('data-text', combo);
-    
+
     // trigger glitch anim
     comboEl.classList.remove('active');
-    void comboEl.offsetWidth; 
+    void comboEl.offsetWidth;
     comboEl.classList.add('active');
 }
 
@@ -812,19 +999,19 @@ function processRecordUp(lane) {
     const hold = activeHolds[lane];
     const time = audio ? audio.currentTime : hold.start;
     const duration = time - hold.start;
-    
+
     let finalDur = undefined;
     if (duration > 0.15) {
         finalDur = quantize(time, recordBpm, QUANTIZE_DIVISOR) - hold.qStart;
-        if(finalDur < 0) finalDur = undefined;
+        if (finalDur < 0) finalDur = undefined;
     }
-    
+
     recordingNotes.push({
         time: parseFloat(hold.qStart.toFixed(3)),
         lane: hold.lane,
         duration: finalDur ? parseFloat(finalDur.toFixed(3)) : undefined
     });
-    
+
     activeHolds[lane] = null;
     document.getElementById('record-count').innerText = `Notes: ${recordingNotes.length}`;
 }
@@ -839,54 +1026,54 @@ function startRecording() {
 }
 
 async function endRecording() {
-    if(gameState === 'RECORD_END') return;
+    if (gameState === 'RECORD_END') return;
     gameState = 'RECORD_END';
     audio.pause();
     document.getElementById('record-hud').style.display = 'none';
-    
-    recordingNotes.sort((a,b)=>a.time - b.time);
+
+    recordingNotes.sort((a, b) => a.time - b.time);
     const newMap = {
         title: beatmap ? beatmap.title : "Custom DB Track",
         bpm: recordBpm,
         offset: 0,
         notes: recordingNotes
     };
-    
+
     try {
         await fetch('/api/save_beatmap', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ songId: currentSongId, beatmapData: newMap })
         });
         displayJudgment('SAVED!', '#00ff00');
-    } catch(e) { console.error('db save failed', e); }
+    } catch (e) { console.error('db save failed', e); }
 }
 
 function endGame() {
     if (gameState === 'END') return;
     gameState = 'END';
     audio.pause();
-    
+
     document.getElementById('res-score').innerText = score;
     document.getElementById('res-combo').innerText = maxCombo;
     document.getElementById('res-perfect').innerText = hits.perfect;
     document.getElementById('res-great').innerText = hits.great;
     document.getElementById('res-good').innerText = hits.good;
     document.getElementById('res-miss').innerText = hits.miss;
-    
+
     showScreen('result');
-    
+
     // Save score API placeholder
     fetch('/api/score', {
         method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({name:'Player', score, combo: maxCombo})
-    }).catch(e=>console.log('Leaderboard write skip: ', e));
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Player', score, combo: maxCombo })
+    }).catch(e => console.log('Leaderboard write skip: ', e));
 }
 
 function resetGame() {
     score = 0; combo = 0; maxCombo = 0;
-    hits = {perfect:0, great:0, good:0, miss:0};
+    hits = { perfect: 0, great: 0, good: 0, miss: 0 };
     updateHUD();
     document.getElementById('progress-bar').style.width = '0%';
     showScreen('songSelect');
@@ -898,9 +1085,9 @@ const clock = new THREE.Clock();
 
 function animate() {
     requestAnimationFrame(animate);
-    
+
     const dt = clock.getDelta();
-    
+
     // Grid animation illusion
     gridHelper.position.z += speed3D * dt;
     if (gridHelper.position.z > 10) gridHelper.position.z = 0;
@@ -931,10 +1118,10 @@ function animate() {
     if (gameState === 'PLAYING') {
         // Apply user audio offset visually to note movements
         const time = audio ? audio.currentTime - (userSettings.offset / 1000) : 0;
-        
+
         // Progress Bar
         const dur = audio && audio.duration ? audio.duration : 1;
-        document.getElementById('progress-bar').style.width = `${(time/dur)*100}%`;
+        document.getElementById('progress-bar').style.width = `${(time / dur) * 100}%`;
 
         // Update Note Meshes
         noteMeshes.forEach(nm => {
@@ -967,18 +1154,18 @@ function animate() {
             endGame();
         } else if (beatmap.notes.length > 0) {
             let lastNote = beatmap.notes[beatmap.notes.length - 1];
-            if (time > lastNote.time + (lastNote.duration||0) + 3) endGame();
+            if (time > lastNote.time + (lastNote.duration || 0) + 3) endGame();
         }
     } else if (gameState === 'RECORDING') {
         const time = audio ? audio.currentTime : 0;
         const dur = audio && audio.duration ? audio.duration : 1;
-        document.getElementById('progress-bar').style.width = `${(time/dur)*100}%`;
+        document.getElementById('progress-bar').style.width = `${(time / dur) * 100}%`;
         if (audio && audio.ended) endRecording();
     } else if (gameState === 'CALIBRATING') {
         const now = performance.now();
         const elapsed = now - calibData.startTime;
         const beatProgress = (elapsed % calibData.interval) / calibData.interval;
-        
+
         // Custom metronome beat logic
         const beatIndex = Math.floor(elapsed / calibData.interval);
         if (!calibData.lastBeatIndex || calibData.lastBeatIndex !== beatIndex) {
