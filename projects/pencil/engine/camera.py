@@ -16,7 +16,7 @@ class Camera:
         self,
         world_width: int = WINDOW_WIDTH,
         world_height: int = WINDOW_HEIGHT,
-        lerp_speed: float = 5.0,
+        lerp_speed: float = 15.0,
     ):
         self.offset = pygame.math.Vector2(0, 0)
         self.world_width = world_width
