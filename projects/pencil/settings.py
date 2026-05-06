@@ -1,6 +1,5 @@
 """
 settings.py — 전역 설정 상수
-모든 모듈에서 import하여 사용하는 중앙 설정 파일.
 """
 
 import os
@@ -16,7 +15,7 @@ FONTS_DIR = os.path.join(ASSETS_DIR, "fonts")
 WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 600
 FPS = 60
-TITLE = "Pencil Engine"
+TITLE = "Pencil Engine - Room Adventure"
 
 # ── 색상 팔레트 (R, G, B, [A]) ────────────────────────
 class Colors:
@@ -34,12 +33,23 @@ class Colors:
     LIGHT_GRAY  = (200, 200, 210)
     TRANSPARENT = (0,   0,   0,  0)
 
-# ── 물리 ──────────────────────────────────────────────
-GRAVITY = 800          # px/s²
+# ── 테마 설정 (방 번호에 따라 변경) ────────────────────
+THEMES = {
+    "FOREST":  {"bg": (20, 40, 20), "name": "숲속 평원", "accent": (133, 153, 0)},
+    "CAVE":    {"bg": (25, 25, 30), "name": "어두운 동굴", "accent": (38, 139, 210)},
+    "VOLCANO": {"bg": (40, 15, 15), "name": "용암 지대", "accent": (203, 75, 22)}
+}
+
+def get_theme_by_room(room_num):
+    if room_num <= 3: return THEMES["FOREST"]
+    if room_num <= 6: return THEMES["CAVE"]
+    return THEMES["VOLCANO"]
+
+# ── 물리 및 레이어 ────────────────────────────────────
+GRAVITY = 800
 FRICTION = 0.85
 TILE_SIZE = 32
 
-# ── 레이어 순서 (draw order) ──────────────────────────
 class Layers:
     BACKGROUND = 0
     TILES      = 1
