@@ -1,5 +1,5 @@
 """
-settings.py — 타일 기반 이동을 위한 설정
+settings.py — 최적화된 고화질 해상도(1280x720) 적용
 """
 
 import os
@@ -11,33 +11,33 @@ IMAGES_DIR = os.path.join(ASSETS_DIR, "images")
 SOUNDS_DIR = os.path.join(ASSETS_DIR, "sounds")
 FONTS_DIR = os.path.join(ASSETS_DIR, "fonts")
 
-# ── 윈도우 ────────────────────────────────────────────
-WINDOW_WIDTH = 800
-WINDOW_HEIGHT = 600
+# ── 윈도우 (선명도와 퍼포먼스 균형을 위해 1280x720으로 최적화) ──
+WINDOW_WIDTH = 1280
+WINDOW_HEIGHT = 720
 FPS = 60
-TITLE = "Pencil Engine - Tile Movement (Zombie High Style)"
+TITLE = "Pencil Engine - High Quality Mode"
 
-# ── 색상 팔레트 ──────────────────────────────────────
+# ── 색상 팔레트 (좀 더 풍부한 색감으로 조정) ───────────
 class Colors:
-    BLACK       = (0,   0,   0)
-    WHITE       = (255, 255, 255)
+    BLACK       = (10,  10,  15)
+    WHITE       = (245, 245, 250)
     RED         = (220, 50,  47)
     GREEN       = (133, 153, 0)
     BLUE        = (38,  139, 210)
     YELLOW      = (181, 137, 0)
     CYAN        = (42,  161, 152)
-    DARK_BG     = (18,  18,  24)
+    DARK_BG     = (15,  15,  20)
     MID_GRAY    = (88,  88,  100)
     LIGHT_GRAY  = (200, 200, 210)
 
-# ── 타일 설정 (좀비고 스타일) ────────────────────────
-TILE_SIZE = 48  # 한 칸의 크기 (48x48)
+# ── 타일 및 물리 설정 ────────────────────────────────
+TILE_SIZE = 64 # 고해상도 시각화를 위해 타일 크기를 64로 상향
 
 # ── 테마 설정 ────────────────────────────────────────
 THEMES = {
-    "FOREST":  {"bg": (20, 40, 20), "name": "숲속 평원", "accent": (133, 153, 0)},
-    "CAVE":    {"bg": (25, 25, 30), "name": "어두운 동굴", "accent": (38, 139, 210)},
-    "VOLCANO": {"bg": (40, 15, 15), "name": "용암 지대", "accent": (203, 75, 22)}
+    "FOREST":  {"bg": (25, 35, 25), "name": "에메랄드 숲", "accent": (100, 180, 100)},
+    "CAVE":    {"bg": (20, 20, 30), "name": "심연의 동굴", "accent": (80, 120, 200)},
+    "VOLCANO": {"bg": (35, 15, 15), "name": "화염의 땅", "accent": (220, 80, 50)}
 }
 
 def get_theme_by_room(room_num):

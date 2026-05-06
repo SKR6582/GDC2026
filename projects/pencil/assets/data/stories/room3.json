@@ -1,0 +1,21 @@
+[
+    {
+        "type": "text",
+        "char_id": "noa",
+        "content": "선생님, 저기 앞에 좀 더 빠른 녀석들이 나타난 것 같아요.",
+        "side": "right"
+    },
+    {
+        "type": "text",
+        "char_id": "yuuka",
+        "content": "빨간 눈의 녀석들이군요... 조심하세요, 공격당하면 더 아플 거예요!",
+        "side": "left"
+    },
+    {
+        "type": "text",
+        "char_id": "system",
+        "content": "강력한 적들이 나타나기 시작했다.",
+        "side": "center",
+        "next": "end"
+    }
+]

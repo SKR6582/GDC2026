@@ -1,0 +1,43 @@
+[
+    {
+        "type": "text",
+        "char_id": "yuuka",
+        "content": "이 복도... 평소보다 적들이 더 많은 것 같은데요? 조심하세요 선생님.",
+        "side": "left"
+    },
+    {
+        "type": "text",
+        "char_id": "noa",
+        "content": "어머, 무서워라~ 하지만 선생님이 계시니까 든든한걸요?",
+        "side": "right"
+    },
+    {
+        "type": "choice",
+        "question": "어떻게 할까?",
+        "options": [
+            { "text": "내가 앞장설게. 따라와!", "next": 3 },
+            { "text": "둘 다 내 뒤로 숨어.", "next": 4 }
+        ]
+    },
+    {
+        "type": "text",
+        "char_id": "yuuka",
+        "content": "후훗, 말이라도 고맙네요. 그럼 믿고 따라갈게요!",
+        "side": "left",
+        "next": 5
+    },
+    {
+        "type": "text",
+        "char_id": "noa",
+        "content": "선생님은 정말 기사님 같다니까요~",
+        "side": "right",
+        "next": 5
+    },
+    {
+        "type": "text",
+        "char_id": "system",
+        "content": "더 깊은 복도로 진입한다. (전투 시작)",
+        "side": "center",
+        "next": "end"
+    }
+]

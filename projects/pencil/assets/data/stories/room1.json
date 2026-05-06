@@ -1,0 +1,49 @@
+[
+    {
+        "type": "text",
+        "char_id": "yuuka",
+        "content": "선생님! 또 서류 작업을 미뤄두고 졸고 계셨던 건가요?",
+        "side": "left"
+    },
+    {
+        "type": "text",
+        "char_id": "noa",
+        "content": "후훗, 선생님도 참... 어제 당직이라 피곤하셨나 봐요. 제가 다 기록해두었답니다?",
+        "side": "right"
+    },
+    {
+        "type": "choice",
+        "question": "어떻게 대답할까?",
+        "options": [
+            {
+                "text": "미안해 유우카, 금방 끝낼게!",
+                "next": 3
+            },
+            {
+                "text": "노아, 방금 건 못 본 걸로 해주면 안 될까?",
+                "next": 4
+            }
+        ]
+    },
+    {
+        "type": "text",
+        "char_id": "yuuka",
+        "content": "정말이지... 이번 한 번만 봐드리는 거니까요! 얼른 시작하세요.",
+        "side": "left",
+        "next": 5
+    },
+    {
+        "type": "text",
+        "char_id": "noa",
+        "content": "글쎄요~ 선생님의 부탁이라면 고민해볼게요. 대신 이따 차 한 잔 같이 해주실 거죠?",
+        "side": "right",
+        "next": 5
+    },
+    {
+        "type": "text",
+        "char_id": "system",
+        "content": "유우카와 노아의 도움으로 서류 작업을 모두 마쳤다. (전투로 이동)",
+        "side": "center",
+        "next": "end"
+    }
+]

@@ -1,0 +1,21 @@
+[
+    {
+        "type": "text",
+        "char_id": "yuuka",
+        "content": "드디어 마지막 관문이에요! 저 끝에 탈출구가 보여요!",
+        "side": "left"
+    },
+    {
+        "type": "text",
+        "char_id": "noa",
+        "content": "마지막까지 힘내세요, 선생님!",
+        "side": "right"
+    },
+    {
+        "type": "text",
+        "char_id": "system",
+        "content": "마지막 구역에 진입한다.",
+        "side": "center",
+        "next": "end"
+    }
+]
