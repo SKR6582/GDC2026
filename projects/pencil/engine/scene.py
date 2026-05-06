@@ -3,7 +3,7 @@ scene.py — 씬(Scene) 기반 상태 관리.
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 import pygame
 
 if TYPE_CHECKING:
@@ -36,10 +36,10 @@ class SceneManager:
     """씬 스택 관리. change/push/pop 지원."""
 
     def __init__(self):
-        self._stack: list[Scene] = []
+        self._stack: List[Scene] = []
 
     @property
-    def current(self) -> Scene | None:
+    def current(self) -> Optional[Scene]:
         return self._stack[-1] if self._stack else None
 
     def change(self, scene: Scene):
@@ -53,7 +53,7 @@ class SceneManager:
         self._stack.append(scene)
         scene.on_enter()
 
-    def pop(self) -> Scene | None:
+    def pop(self) -> Optional[Scene]:
         if not self._stack:
             return None
         old = self._stack.pop()

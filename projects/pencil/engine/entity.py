@@ -1,39 +1,49 @@
 """
-entity.py — 게임 엔티티 기본 클래스.
-모든 게임 오브젝트(플레이어, 적, NPC 등)의 베이스.
+entity.py — 탑다운(Top-down) 이동에 최적화된 엔티티 베이스
 """
 
 import pygame
+from typing import List, Tuple
 from settings import Layers
 
-
 class Entity(pygame.sprite.Sprite):
-    """
-    기본 엔티티. pygame.sprite.Sprite 를 확장.
-    - pos: Vector2 기반 정밀 좌표
-    - vel: 속도 벡터
-    - _layer: 렌더링 레이어
-    """
-
-    def __init__(self, x: float, y: float, image: pygame.Surface, layer: int = Layers.ENTITIES):
+    def __init__(self, x: float, y: float, width: int, height: int, color: Tuple[int, int, int], layer: int = Layers.ENTITIES):
         super().__init__()
-        self.image = image
+        self.image = pygame.Surface((width, height))
+        self.image.fill(color)
         self.rect = self.image.get_rect(topleft=(int(x), int(y)))
         self.pos = pygame.math.Vector2(x, y)
         self.vel = pygame.math.Vector2(0, 0)
         self._layer = layer
 
-    def move(self, dt: float):
-        """속도 벡터에 따라 위치 갱신."""
-        self.pos += self.vel * dt
-        self.rect.topleft = (int(self.pos.x), int(self.pos.y))
+    def move_and_collide(self, dt: float, obstacles: List[pygame.Rect]):
+        """탑다운 상하좌우 충돌 처리"""
+        # 1. 수평 이동 및 충돌
+        if self.vel.x != 0:
+            self.pos.x += self.vel.x * dt
+            self.rect.x = int(self.pos.x)
+            self._handle_collision(obstacles, 'x')
+            
+        # 2. 수직 이동 및 충돌
+        if self.vel.y != 0:
+            self.pos.y += self.vel.y * dt
+            self.rect.y = int(self.pos.y)
+            self._handle_collision(obstacles, 'y')
 
-    def update(self, dt: float):
-        """매 프레임 호출. 서브클래스에서 오버라이드."""
-        self.move(dt)
+    def _handle_collision(self, obstacles: List[pygame.Rect], direction: str):
+        for wall in obstacles:
+            if self.rect.colliderect(wall):
+                if direction == 'x':
+                    if self.vel.x > 0: self.rect.right = wall.left
+                    elif self.vel.x < 0: self.rect.left = wall.right
+                    self.pos.x = self.rect.x
+                
+                if direction == 'y':
+                    if self.vel.y > 0: self.rect.bottom = wall.top
+                    elif self.vel.y < 0: self.rect.top = wall.bottom
+                    self.pos.y = self.rect.y
 
     def draw(self, screen: pygame.Surface, camera=None):
-        """카메라 오프셋을 적용하여 그리기."""
         if camera:
             screen.blit(self.image, camera.apply(self.rect))
         else:
