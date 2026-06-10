@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=1280, height=720, initial-scale=1.0" name="viewport"/>
+<title>KBO LIVE Simulation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=Noto+Sans:wght@400;700&amp;family=JetBrains+Mono:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "on-surface": "#e3e1eb",
+                "on-primary": "#011a97",
+                "secondary-fixed": "#ffdbcd",
+                "on-primary-fixed": "#000d60",
+                "on-primary-fixed-variant": "#2638ad",
+                "inverse-on-surface": "#2f3037",
+                "on-secondary-container": "#541d00",
+                "on-error": "#690005",
+                "on-secondary-fixed": "#360f00",
+                "tertiary": "#ffb4a1",
+                "primary-container": "#1428a0",
+                "on-error-container": "#ffdad6",
+                "surface-container-highest": "#34343c",
+                "surface-container-low": "#1a1b22",
+                "surface-bright": "#383940",
+                "surface-tint": "#bcc3ff",
+                "tertiary-fixed": "#ffdbd2",
+                "on-primary-container": "#8f9cff",
+                "on-secondary": "#581e00",
+                "outline": "#8f8f9f",
+                "error-container": "#93000a",
+                "on-surface-variant": "#c5c5d5",
+                "surface": "#12131a",
+                "secondary-container": "#fe6500",
+                "background": "#12131a",
+                "surface-container-lowest": "#0d0e14",
+                "on-tertiary": "#611300",
+                "surface-variant": "#34343c",
+                "primary-fixed": "#dfe0ff",
+                "surface-dim": "#12131a",
+                "on-tertiary-fixed": "#3c0800",
+                "primary": "#bcc3ff",
+                "surface-container-high": "#292931",
+                "tertiary-container": "#721800",
+                "outline-variant": "#454653",
+                "surface-container": "#1f1f26",
+                "error": "#ffb4ab",
+                "secondary-fixed-dim": "#ffb596",
+                "tertiary-fixed-dim": "#ffb4a1",
+                "inverse-primary": "#4152c5",
+                "secondary": "#ffb596",
+                "primary-fixed-dim": "#bcc3ff",
+                "on-background": "#e3e1eb",
+                "on-tertiary-fixed-variant": "#84250a",
+                "inverse-surface": "#e3e1eb",
+                "on-tertiary-container": "#ff7f5d",
+                "on-secondary-fixed-variant": "#7c2e00"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+            },
+            "spacing": {
+                "element-gap": "8px",
+                "gutter-md": "16px",
+                "safe-zone": "64px",
+                "component-padding": "12px"
+            },
+            "fontFamily": {
+                "caption-sm": ["Noto Sans"],
+                "score-display": ["Bebas Neue"],
+                "pitch-speed": ["JetBrains Mono"],
+                "player-name": ["Noto Sans"],
+                "body-md": ["Noto Sans"],
+                "stat-label": ["Noto Sans"]
+            },
+            "fontSize": {
+                "caption-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                "score-display": ["48px", {"lineHeight": "48px", "letterSpacing": "0.05em", "fontWeight": "400"}],
+                "pitch-speed": ["36px", {"lineHeight": "40px", "fontWeight": "700"}],
+                "player-name": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "stat-label": ["12px", {"lineHeight": "16px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: transparent;
+        font-family: 'Noto Sans', sans-serif;
+        width: 1280px;
+        height: 720px;
+      }
+      .broadcast-canvas {
+        width: 1280px;
+        height: 720px;
+        position: relative;
+        background: radial-gradient(circle, rgba(18,19,26,0) 0%, rgba(18,19,26,0.4) 100%);
+        overflow: hidden;
+      }
+      .glass-panel {
+        background: rgba(18, 19, 26, 0.75);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .led-dot { width: 12px; height: 12px; border-radius: 50%; background: #34343c; }
+      .led-strike { background: #ff4d4d; box-shadow: 0 0 8px #ff4d4d; }
+      .led-ball { background: #ffd600; box-shadow: 0 0 8px #ffd600; }
+      .led-out { background: #ff4d4d; box-shadow: 0 0 8px #ff4d4d; position: relative; }
+      
+      /* Diamond Graphic */
+      .diamond-base {
+        width: 20px;
+        height: 20px;
+        background: rgba(255, 255, 255, 0.2);
+        transform: rotate(45deg);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+      }
+      .diamond-base.active {
+        background: #FFD600;
+        box-shadow: 0 0 12px #FFD600;
+      }
+    </style>
+</head>
+<body class="dark flex items-center justify-center bg-transparent">
+<div class="broadcast-canvas">
+<!-- Background Layer for 3D Engine (Placeholder for transparent architecture) -->
+<div class="absolute inset-0 z-0 pointer-events-none"></div>
+<!-- Shared Component: TopAppBar (Brand Navigation) -->
+<header class="fixed top-0 left-0 w-full bg-surface/75 dark:bg-surface/75 backdrop-blur-md border-b border-white/10 flex justify-between items-center px-safe-zone py-element-gap z-50">
+<div class="flex items-center gap-4">
+<span class="font-score-display text-score-display text-on-surface">KBO LIVE</span>
+<nav class="hidden md:flex gap-gutter-md ml-8">
+<a class="text-primary font-bold font-body-md text-body-md" href="#">Live</a>
+<a class="text-on-surface-variant hover:bg-primary/20 transition-opacity duration-300 font-body-md text-body-md px-2 rounded" href="#">Schedule</a>
+<a class="text-on-surface-variant hover:bg-primary/20 transition-opacity duration-300 font-body-md text-body-md px-2 rounded" href="#">Stats</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface hover:bg-primary/20 p-2 rounded transition-opacity duration-300">
+<span class="material-symbols-outlined">volume_up</span>
+</button>
+<button class="text-on-surface hover:bg-primary/20 p-2 rounded transition-opacity duration-300">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</header>
+<!-- 2. Top-Left: ScoreBoard Overlay -->
+<div class="absolute top-[100px] left-safe-zone z-40">
+<div class="glass-panel rounded-xl overflow-hidden shadow-2xl flex flex-col w-[340px]">
+<!-- Header: Inning & Count -->
+<div class="bg-surface-container-highest px-4 py-2 flex justify-between items-center border-b border-white/10">
+<div class="flex items-center gap-2">
+<span class="font-bold text-secondary text-body-md uppercase tracking-widest">5th TOP</span>
+</div>
+<!-- S/B/O Dots -->
+<div class="flex gap-4">
+<div class="flex items-center gap-1">
+<span class="text-[10px] text-on-surface-variant font-bold">S</span>
+<div class="led-dot led-strike"></div>
+<div class="led-dot"></div>
+</div>
+<div class="flex items-center gap-1">
+<span class="text-[10px] text-on-surface-variant font-bold">B</span>
+<div class="led-dot led-ball"></div>
+<div class="led-dot led-ball"></div>
+<div class="led-dot"></div>
+</div>
+<div class="flex items-center gap-1">
+<span class="text-[10px] text-on-surface-variant font-bold">O</span>
+<div class="led-dot led-out"></div>
+<div class="led-dot"></div>
+</div>
+</div>
+</div>
+<!-- Team Scores -->
+<div class="p-0">
+<!-- Samsung Away -->
+<div class="flex items-center justify-between border-b border-white/5 bg-primary-container/20">
+<div class="flex items-center">
+<div class="w-2 h-12 bg-[#074CA1]"></div>
+<span class="ml-4 font-score-display text-player-name text-on-surface">SAMSUNG</span>
+</div>
+<span class="font-score-display text-score-display px-6 text-on-surface">1</span>
+</div>
+<!-- Hanwha Home -->
+<div class="flex items-center justify-between">
+<div class="flex items-center">
+<div class="w-2 h-12 bg-secondary-container"></div>
+<span class="ml-4 font-score-display text-player-name text-on-surface">HANWHA</span>
+</div>
+<span class="font-score-display text-score-display px-6 text-on-surface">0</span>
+</div>
+</div>
+</div>
+<!-- 5. Center: Diamond Runner Indicator (Positioned relative to scorebug for broadcast style) -->
+<div class="mt-4 glass-panel rounded-lg p-4 flex justify-center items-center gap-8 w-fit">
+<div class="relative w-16 h-16">
+<!-- 2nd Base -->
+<div class="diamond-base active absolute top-0 left-1/2 -translate-x-1/2"></div>
+<!-- 3rd Base -->
+<div class="diamond-base absolute top-1/2 left-0 -translate-y-1/2"></div>
+<!-- 1st Base -->
+<div class="diamond-base active absolute top-1/2 right-0 -translate-y-1/2"></div>
+<!-- Home (Simplified) -->
+<div class="w-4 h-4 bg-white/20 absolute bottom-0 left-1/2 -translate-x-1/2 clip-path-polygon"></div>
+</div>
+<div class="flex flex-col">
+<span class="font-stat-label text-stat-label text-on-surface-variant uppercase">PITCH COUNT</span>
+<span class="font-pitch-speed text-player-name text-primary">64</span>
+</div>
+</div>
+</div>
+<!-- 3. Bottom-Right: PitchInfo Overlay -->
+<div class="absolute bottom-[280px] right-safe-zone z-40">
+<div class="glass-panel p-4 rounded-xl w-[180px] flex flex-col items-center">
+<div class="font-stat-label text-[10px] text-on-surface-variant uppercase mb-2 self-start">Pitch Sequence</div>
+<div class="relative w-32 h-40 bg-black/40 border border-white/20 flex items-center justify-center">
+<!-- Strike Zone Grid -->
+<div class="grid grid-cols-3 grid-rows-3 w-20 h-24 border border-white/40">
+<div class="border-r border-b border-white/10"></div>
+<div class="border-r border-b border-white/10"></div>
+<div class="border-b border-white/10"></div>
+<div class="border-r border-b border-white/10"></div>
+<div class="border-r border-b border-white/10"></div>
+<div class="border-b border-white/10"></div>
+<div class="border-r border-white/10"></div>
+<div class="border-r border-white/10"></div>
+<div></div>
+</div>
+<!-- Pitch Dots -->
+<div class="absolute w-3 h-3 rounded-full bg-on-tertiary-container shadow-[0_0_8px_#ff7f5d] top-1/4 left-1/3 -translate-x-1/2 -translate-y-1/2 opacity-40"></div>
+<div class="absolute w-3 h-3 rounded-full bg-on-tertiary-container shadow-[0_0_8px_#ff7f5d] top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 opacity-40"></div>
+<div class="absolute w-4 h-4 rounded-full bg-secondary-container shadow-[0_0_12px_#fe6500] bottom-1/3 left-1/2 -translate-x-1/2 translate-y-1/2 border-2 border-white ring-2 ring-white/20"></div>
+</div>
+<div class="flex justify-between w-full mt-2">
+<div class="flex items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-secondary-container"></div>
+<span class="text-[10px] text-on-surface-variant font-body-md">Current</span>
+</div>
+<div class="flex items-center gap-1">
+<div class="w-2 h-2 rounded-full bg-on-tertiary-container opacity-40"></div>
+<span class="text-[10px] text-on-surface-variant font-body-md">Prev</span>
+</div>
+</div>
+</div>
+</div><div class="absolute bottom-[140px] right-safe-zone z-40 text-right animate-pulse">
+<div class="glass-panel p-6 rounded-2xl inline-block border-r-4 border-secondary-container">
+<div class="font-stat-label text-stat-label text-on-surface-variant uppercase mb-1">Last Pitch</div>
+<div class="font-pitch-speed text-pitch-speed text-on-surface mb-1">148 <span class="text-body-md font-body-md text-on-surface-variant">km/h</span></div>
+<div class="font-score-display text-player-name text-secondary-container uppercase tracking-widest">Sinker</div>
+</div>
+</div>
+<!-- 4. Bottom: PlayerInfo Ticker Bar -->
+<div class="fixed bottom-0 left-0 w-full z-50">
+<!-- Dynamic Ticker Bar -->
+<div class="h-20 bg-gradient-to-r from-[#12131a] via-surface-container-low to-[#12131a] border-t border-white/10 flex items-center px-safe-zone">
+<!-- Batter Section -->
+<div class="flex-1 flex items-center gap-6 border-r border-white/10">
+<div class="relative">
+<div class="w-14 h-14 rounded-full bg-secondary-container/20 border border-secondary-container flex items-center justify-center overflow-hidden">
+<img alt="Batter" class="w-12 h-12" data-alt="A stylized portrait of a professional baseball player with a focused expression, wearing a team uniform with orange accents. Modern digital illustration style, clean lines, high contrast broadcast lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBIhxEwWQG7lktGtZ1KQE0OTSvdMIfCu9928T4RGCv2EZEB1cYyVhstwj6aNoXLSaUDrrXnQtwoDDkUB4laE2MV_Z6f5BZEVfjGxNxbx79WeBGcUMjdHecorzxDhLHneKNkEPDVDPI_4R2Ng650TKSYtQ1sbectnJoThxDXdua4T8FWB3uCMiHCCEz2uU2zkiU9Hl5mHa5RGWU9CDhtRcLdoH9TqBNXul0bxMfx6W_oGfJhatFCGG1vfrZGY5XzYhWxN7nFRV1N_Tl"/>
+</div>
+<div class="absolute -bottom-1 -right-1 bg-secondary-container text-on-secondary-container text-[10px] font-bold px-1 rounded">H</div>
+</div>
+<div class="flex flex-col">
+<span class="font-stat-label text-stat-label text-secondary-container uppercase tracking-tighter">Current Batter</span>
+<span class="font-player-name text-player-name text-on-surface leading-tight">Chae Eun-seong</span>
+<div class="flex gap-4 mt-1">
+<span class="font-body-md text-caption-sm text-on-surface-variant">AVG <strong class="text-on-surface">.284</strong></span>
+<span class="font-body-md text-caption-sm text-on-surface-variant">HR <strong class="text-on-surface">12</strong></span>
+</div>
+</div>
+</div>
+<!-- Pitcher Section -->
+<div class="flex-1 flex items-center gap-6 pl-12">
+<div class="flex flex-col text-right">
+<span class="font-stat-label text-stat-label text-primary uppercase tracking-tighter">On Mound</span>
+<span class="font-player-name text-player-name text-on-surface leading-tight">Won Tae-in</span>
+<div class="flex gap-4 mt-1 justify-end">
+<span class="font-body-md text-caption-sm text-on-surface-variant">ERA <strong class="text-on-surface">3.42</strong></span>
+<span class="font-body-md text-caption-sm text-on-surface-variant">SO <strong class="text-on-surface">98</strong></span>
+</div>
+</div>
+<div class="relative">
+<div class="w-14 h-14 rounded-full bg-primary/20 border border-primary flex items-center justify-center overflow-hidden">
+<img alt="Pitcher" class="w-12 h-12" data-alt="A professional athlete portrait in a baseball jersey with blue trim, featuring a determined look. Minimalist clean artistic style, broadcast standard lighting, focused on facial details." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyC62LYyVIUiSiYFN-yS-xy6x234PdxVbxNfqJXK9dEMSUptG74PvGgTQSDIfAcl25bM-mvf8zSQV6bhGuZKkrL4aoC6fROtv2Eij_s40HGW0VOTNlV4tnvIVf_4JwpPfHSIQn0ExdAqA1Bv1_2vrRewhCvEkk0EfFHwBpvMejq91GHcqKTqIIFGr2aM0Z9ak812cxxKvOtGvo3DzxPOncHJt6Y2vtb_CyDspui6osaUDFjqV28k3iIjzLykRt6ob1Ie7zuO7VPxOq"/>
+</div>
+<div class="absolute -bottom-1 -right-1 bg-primary text-on-primary text-[10px] font-bold px-1 rounded">S</div>
+</div>
+</div>
+</div>
+<!-- Shared Component: BottomNavBar -->
+<div class="bg-surface-container-low/80 backdrop-blur-xl border-t border-white/10 flex justify-around items-center px-safe-zone pb-4">
+<button class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-xl p-2 scale-95 active:scale-90 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">sports_baseball</span>
+<span class="font-body-md text-[10px] uppercase">Live</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-container-highest transition-transform">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-body-md text-[10px] uppercase">Schedule</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-container-highest transition-transform">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body-md text-[10px] uppercase">Stats</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-container-highest transition-transform">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-body-md text-[10px] uppercase">Teams</span>
+</button>
+</div>
+</div>
+<!-- Atmospheric Micro-interactions -->
+<div class="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden opacity-30">
+<div id="particle-container"></div>
+</div>
+</div>
+<script>
+        // Simple atmospheric dust particles to simulate stadium floodlight haze
+        const container = document.getElementById('particle-container');
+        for (let i = 0; i < 20; i++) {
+            const dot = document.createElement('div');
+            dot.style.position = 'absolute';
+            dot.style.width = '2px';
+            dot.style.height = '2px';
+            dot.style.background = 'rgba(255, 255, 255, 0.3)';
+            dot.style.top = Math.random() * 100 + '%';
+            dot.style.left = Math.random() * 100 + '%';
+            dot.style.borderRadius = '50%';
+            dot.animate([
+                { transform: 'translateY(0) translateX(0)', opacity: 0 },
+                { transform: 'translateY(-100px) translateX(20px)', opacity: 1 },
+                { transform: 'translateY(-200px) translateX(0)', opacity: 0 }
+            ], {
+                duration: 5000 + Math.random() * 5000,
+                iterations: Infinity,
+                delay: Math.random() * 5000
+            });
+            container.appendChild(dot);
+        }
+
+        // Simulate pitch update
+        setInterval(() => {
+            const speeds = [148, 149, 147, 151, 145];
+            const types = ['Sinker', 'Fastball', 'Slider', 'Changeup'];
+            const speedEl = document.querySelector('.font-pitch-speed.text-pitch-speed');
+            const typeEl = document.querySelector('.font-score-display.text-player-name.text-secondary-container');
+            
+            if (speedEl && typeEl) {
+                const s = speeds[Math.floor(Math.random() * speeds.length)];
+                const t = types[Math.floor(Math.random() * types.length)];
+                speedEl.innerHTML = `${s} <span class="text-body-md font-body-md text-on-surface-variant">km/h</span>`;
+                typeEl.innerText = t;
+            }
+        }, 8000);
+    </script>
+</body></html>

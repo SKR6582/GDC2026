@@ -11,7 +11,7 @@ FONTS_DIR = os.path.join(ASSETS_DIR, "fonts")
 
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
-FPS = 60
+FPS = 120
 TITLE = "Pencil Wars — 책상 위의 전쟁"
 
 class Colors:
