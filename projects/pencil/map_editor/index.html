@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Pencil — 맵 편집기</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <div class="editor-area">
+      <div class="viewport-container">
+        <div class="grid-outer-frame">
+          <div id="grid-container" class="grid-container desk-theme-wood"></div>
+        </div>
+      </div>
+      <div class="editor-help">
+        좌클릭: 그리기 · 우클릭: 이벤트 · <kbd>[</kbd><kbd>]</kbd> 맵 전환 · <kbd>Ctrl+S</kbd> 저장
+      </div>
+      <div id="status-bar" class="status-bar">준비됨</div>
+    </div>
+
+    <div class="sidebar">
+      <!-- 맵 전환 -->
+      <div class="sidebar-section map-nav-section">
+        <div class="map-nav">
+          <button class="btn-icon" id="btn-prev-map" title="이전 맵 [">◀</button>
+          <select id="map-select" class="map-select"></select>
+          <button class="btn-icon" id="btn-next-map" title="다음 맵 ]">▶</button>
+        </div>
+        <div class="map-nav-actions">
+          <button class="btn btn-save" id="btn-save-map">저장</button>
+          <button class="btn btn-ghost" id="btn-new-map">+ 새 맵</button>
+        </div>
+        <div id="map-file-info" class="map-file-info">room_1.json</div>
+      </div>
+
+      <!-- 브러시 -->
+      <div class="sidebar-section">
+        <h2 class="section-label">브러시</h2>
+        <div class="palette palette-compact">
+          <button class="palette-item active" data-mode="tile" data-type="0" title="길"><span class="swatch t0"></span>길</button>
+          <button class="palette-item" data-mode="tile" data-type="1" title="벽"><span class="swatch t1"></span>벽</button>
+          <button class="palette-item" data-mode="tile" data-type="2" title="장식"><span class="swatch t2"></span>장식</button>
+          <button class="palette-item" data-mode="tile" data-type="3" title="상호작용"><span class="swatch t3"></span>상자</button>
+          <button class="palette-item" data-mode="tile" data-type="4" title="발판"><span class="swatch t4"></span>발판</button>
+          <button class="palette-item palette-spawn" data-mode="spawn" title="시작 위치"><span class="swatch t-spawn"></span>스폰</button>
+        </div>
+        <div id="spawn-info" class="spawn-info">시작: (2, 10)</div>
+      </div>
+
+      <!-- 셀 편집 (우클릭 시) -->
+      <div class="sidebar-section" id="cell-panel">
+        <h2 class="section-label">선택 셀</h2>
+        <div id="no-selection-msg" class="hint-text">우클릭으로 셀을 선택하세요</div>
+        <div id="selection-details" class="hidden">
+          <div class="cell-meta">
+            <span id="selected-coords">(0, 0)</span>
+            <span id="selected-typename">길</span>
+          </div>
+          <div class="quick-events">
+            <button class="btn-chip" data-preset="log">로그</button>
+            <button class="btn-chip" data-preset="teleport">텔포</button>
+            <button class="btn-chip" data-preset="next_room">다음방</button>
+            <button class="btn-chip" data-preset="none">제거</button>
+          </div>
+          <select id="event-action" class="hidden"></select>
+          <select id="event-trigger" class="hidden">
+            <option value="interact">interact</option>
+            <option value="step">step</option>
+          </select>
+          <div id="event-args-fields" class="event-args-fields"></div>
+          <textarea id="lambda-input" class="hidden"></textarea>
+        </div>
+      </div>
+
+      <!-- 고급 (접기) -->
+      <details class="sidebar-section advanced-panel">
+        <summary>고급 설정</summary>
+        <div class="advanced-body">
+          <label class="input-label">테마</label>
+          <select id="theme-select" class="full-input">
+            <option value="DESK_WOOD">나무 책상</option>
+            <option value="DESK_WHITE">하얀 책상</option>
+            <option value="DESK_DARK">어두운 서재</option>
+          </select>
+          <div class="size-row">
+            <input type="number" id="input-w" min="1" max="150" value="60" title="가로">
+            <span>×</span>
+            <input type="number" id="input-h" min="1" max="100" value="20" title="세로">
+          </div>
+          <div class="bg-row">
+            <input type="file" id="bg-image-input" accept="image/*" class="hidden">
+            <button class="btn btn-ghost btn-block" id="btn-select-bg">배경 이미지</button>
+            <button class="btn btn-ghost btn-block hidden" id="btn-clear-bg">배경 제거</button>
+            <button class="btn btn-ghost btn-block" id="btn-import-aligner">aligner 가져오기</button>
+            <div id="bg-image-filename" class="hint-text">배경 없음</div>
+          </div>
+          <button class="btn btn-ghost btn-block" id="btn-reset-map">맵 비우기</button>
+        </div>
+      </details>
+
+      <div class="footer-info">Pencil Editor v2.1</div>
+    </div>
+  </div>
+
+  <input type="number" id="spawn-x" class="hidden" value="2">
+  <input type="number" id="spawn-y" class="hidden" value="10">
+  <input type="number" id="meta-room-id" class="hidden" value="1">
+  <input type="number" id="new-room-id" class="hidden" value="1">
+
+  <script src="map-utils.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>

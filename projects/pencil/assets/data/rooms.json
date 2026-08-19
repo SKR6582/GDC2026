@@ -1,0 +1,8 @@
+{
+  "rooms": [
+    { "id": 1, "map": "room_1.json", "entry_story": "room1.json" },
+    { "id": 2, "map": "room_2.json", "entry_story": "room2.json" },
+    { "id": 3, "map": "room_3.json", "entry_story": "room3.json" },
+    { "id": 4, "map": "room_4.json", "entry_story": "room4.json" }
+  ]
+}

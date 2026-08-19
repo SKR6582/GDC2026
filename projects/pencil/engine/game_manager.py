@@ -11,6 +11,7 @@ class GameManager:
         self.max_rooms = 10
         self.score = 0
         self.player_hp = 100
+        self.flags = {}
         
     def next_room(self):
         self.current_room += 1
@@ -30,3 +31,10 @@ class GameManager:
         self.current_room = 1
         self.score = 0
         self.player_hp = 100
+        self.flags = {}
+
+    def set_flag(self, key, value=True):
+        self.flags[key] = value
+
+    def get_flag(self, key, default=False):
+        return self.flags.get(key, default)

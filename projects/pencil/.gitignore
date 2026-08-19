@@ -71,6 +71,9 @@ dmypy.json
 # VS Code
 .vscode/
 
+# Map editor
+map_editor/node_modules/
+
 # Assets (Optional: if you want to ignore large media files)
 # assets/images/*.png
 # assets/sounds/*.wav

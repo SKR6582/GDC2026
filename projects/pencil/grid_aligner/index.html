@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pencil Wars — 그리드 정렬 도구 (Grid Aligner)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── 리셋 & 기본 ───────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #0e0e12;
+      --bg-secondary: #16161c;
+      --bg-card: #1c1c26;
+      --bg-hover: #24243a;
+      --border: #2a2a3e;
+      --border-active: #5566ff;
+      --text-primary: #e8e8f0;
+      --text-secondary: #8888aa;
+      --text-dim: #555570;
+      --accent: #5566ff;
+      --accent-glow: rgba(85, 102, 255, 0.35);
+      --accent-soft: rgba(85, 102, 255, 0.12);
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --grid-line: rgba(255, 255, 255, 0.35);
+      --grid-line-major: rgba(85, 102, 255, 0.7);
+      --radius: 10px;
+      --radius-sm: 6px;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+      --font-main: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      font-family: var(--font-main);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* ── 레이아웃 ──────────────────────────────────── */
+    .app {
+      display: flex;
+      width: 100vw; height: 100vh;
+    }
+
+    /* 캔버스 영역 */
+    .canvas-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(85, 102, 255, 0.04), transparent 60%),
+        var(--bg-primary);
+    }
+
+    .canvas-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      z-index: 10;
+    }
+
+    .canvas-toolbar .toolbar-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-right: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .canvas-toolbar .toolbar-title .icon {
+      width: 20px; height: 20px;
+      background: var(--accent);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .toolbar-info {
+      font-size: 12px;
+      color: var(--text-secondary);
+      padding: 4px 10px;
+      background: var(--bg-card);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+
+    .canvas-viewport {
+      flex: 1;
+      position: relative;
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 이미지 + 그리드 오버레이 컨테이너 */
+    .image-grid-wrapper {
+      position: relative;
+      display: inline-block;
+      transform-origin: center center;
+    }
+
+    .image-grid-wrapper img {
+      display: block;
+      max-width: none;
+      image-rendering: auto;
+    }
+
+    .grid-overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    /* 드롭 존 (이미지 없을 때) */
+    .drop-zone {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      width: 600px;
+      height: 400px;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-card);
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .drop-zone:hover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .drop-zone.drag-over {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      box-shadow: 0 0 40px var(--accent-glow);
+    }
+
+    .drop-zone .drop-icon {
+      width: 64px; height: 64px;
+      border-radius: 16px;
+      background: var(--accent-soft);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      transition: transform 0.3s ease;
+    }
+
+    .drop-zone:hover .drop-icon {
+      transform: scale(1.1) translateY(-2px);
+    }
+
+    .drop-zone .drop-text {
+      font-size: 15px;
+      color: var(--text-secondary);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .drop-zone .drop-text strong {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* 사이드바 */
+    .sidebar {
+      width: 340px;
+      min-width: 340px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .sidebar-header {
+      padding: 20px 20px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-header h1 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar-header h1 .badge {
+      font-size: 10px;
+      font-weight: 500;
+      padding: 2px 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-radius: 20px;
+      border: 1px solid rgba(85, 102, 255, 0.2);
+    }
+
+    .sidebar-header p {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+
+    .section {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 12px;
+    }
+
+    /* 이미지 선택 버튼 */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font-main);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--accent);
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover {
+      background: #6677ff;
+      border-color: #6677ff;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    .btn-danger {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.12);
+    }
+
+    .btn-success {
+      background: var(--success);
+      border-color: var(--success);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .btn-success:hover {
+      background: #16a34a;
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+    }
+
+    .btn-block {
+      width: 100%;
+    }
+
+    /* 입력 그룹 */
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .input-row label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      min-width: 70px;
+    }
+
+    .input-row input[type="number"] {
+      flex: 1;
+      padding: 7px 10px;
+      font-size: 14px;
+      font-family: var(--font-main);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.2s ease;
+      -moz-appearance: textfield;
+    }
+
+    .input-row input[type="number"]::-webkit-inner-spin-button,
+    .input-row input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .input-row input[type="number"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    /* 슬라이더 */
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .slider-row label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      min-width: 70px;
+    }
+
+    .slider-row input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    .slider-row input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: 2px solid var(--bg-secondary);
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+
+    .slider-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      min-width: 35px;
+      text-align: right;
+    }
+
+    /* 그리드 옵션 */
+    .grid-color-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .grid-color-row label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      min-width: 70px;
+    }
+
+    .color-swatch {
+      display: flex;
+      gap: 6px;
+    }
+
+    .color-swatch button {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .color-swatch button:hover {
+      transform: scale(1.15);
+    }
+
+    .color-swatch button.active {
+      border-color: var(--text-primary);
+      box-shadow: 0 0 12px rgba(255,255,255,0.15);
+    }
+
+    /* 이미지 정보 카드 */
+    .image-info-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .image-info-card .info-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      padding: 3px 0;
+    }
+
+    .image-info-card .info-row .info-label {
+      color: var(--text-dim);
+    }
+
+    .image-info-card .info-row .info-value {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    /* 결과 표시 */
+    .result-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin-top: 12px;
+    }
+
+    .result-card .result-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .result-card .result-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      padding: 4px 0;
+    }
+
+    .result-card .result-row .result-label {
+      color: var(--text-secondary);
+    }
+
+    .result-card .result-row .result-value {
+      color: var(--text-primary);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* 체크박스 */
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .check-row input[type="checkbox"] {
+      width: 16px; height: 16px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .check-row label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    /* 하단 액션 */
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .footer-version {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    /* 숨기기 */
+    .hidden { display: none !important; }
+
+    /* ── 줌 컨트롤 ─────────────────────────────────── */
+    .zoom-controls {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      display: flex;
+      gap: 4px;
+      z-index: 10;
+    }
+
+    .zoom-controls .btn {
+      width: 36px; height: 36px;
+      padding: 0;
+      font-size: 18px;
+      font-weight: 700;
+      border-radius: 8px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    /* 커서 히트 영역 (마우스 좌표 표시용) */
+    .cursor-coords {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: rgba(14, 14, 18, 0.85);
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      z-index: 10;
+      font-variant-numeric: tabular-nums;
+      pointer-events: none;
+    }
+
+    /* 애니메이션 */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; }
+    }
+
+    /* 스크롤바 */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- 왼쪽: 캔버스 영역 -->
+    <div class="canvas-area">
+      <div class="canvas-toolbar">
+        <div class="toolbar-title">
+          <span class="icon">G</span>
+          그리드 정렬 도구
+        </div>
+        <div class="toolbar-info" id="toolbar-image-info">이미지를 불러와 주세요</div>
+        <div class="toolbar-info" id="toolbar-grid-info" style="display:none;">그리드: <span id="toolbar-grid-size">10 × 10</span></div>
+      </div>
+
+      <div class="canvas-viewport" id="canvas-viewport">
+        <!-- 드롭 존 (이미지 없을 때) -->
+        <div class="drop-zone" id="drop-zone">
+          <div class="drop-icon">🖼️</div>
+          <div class="drop-text">
+            <strong>클릭</strong>하거나 이미지를 <strong>드래그 앤 드롭</strong>하세요<br>
+            맵 배경 이미지를 불러옵니다.
+          </div>
+        </div>
+
+        <!-- 이미지 + 그리드 (이미지 로드 후 표시) -->
+        <div class="image-grid-wrapper hidden" id="image-grid-wrapper">
+          <img id="bg-image" alt="맵 배경 이미지">
+          <canvas id="grid-overlay" class="grid-overlay"></canvas>
+        </div>
+
+        <!-- 줌 컨트롤 -->
+        <div class="zoom-controls hidden" id="zoom-controls">
+          <button class="btn" id="btn-zoom-out" title="축소">−</button>
+          <button class="btn" id="btn-zoom-reset" title="원본 크기">1:1</button>
+          <button class="btn" id="btn-zoom-in" title="확대">+</button>
+        </div>
+
+        <!-- 커서 좌표 -->
+        <div class="cursor-coords hidden" id="cursor-coords">셀: (0, 0)</div>
+      </div>
+    </div>
+
+    <!-- 오른쪽: 사이드바 -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h1>
+          그리드 정렬
+          <span class="badge">Standalone</span>
+        </h1>
+        <p>배경 이미지 위에 투명 그리드(필름)를 얹어<br>맵 칸 수를 눈으로 맞추는 도구입니다.</p>
+      </div>
+
+      <!-- 이미지 관련 -->
+      <div class="section">
+        <div class="section-label">배경 이미지</div>
+        <input type="file" id="file-input" accept="image/*" class="hidden">
+        <button class="btn btn-primary btn-block" id="btn-load-image">📂 이미지 불러오기</button>
+        <button class="btn btn-danger btn-block hidden" id="btn-remove-image" style="margin-top:8px;">✕ 이미지 제거</button>
+
+        <div class="image-info-card hidden" id="image-info-card" style="margin-top:12px;">
+          <div class="info-row">
+            <span class="info-label">파일명</span>
+            <span class="info-value" id="info-filename">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">해상도</span>
+            <span class="info-value" id="info-resolution">—</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">파일 크기</span>
+            <span class="info-value" id="info-filesize">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 그리드 크기 -->
+      <div class="section">
+        <div class="section-label">그리드 크기 (칸 수)</div>
+        <div class="input-row">
+          <label for="grid-cols">가로 (칸)</label>
+          <input type="number" id="grid-cols" min="1" max="200" value="10">
+        </div>
+        <div class="input-row">
+          <label for="grid-rows">세로 (칸)</label>
+          <input type="number" id="grid-rows" min="1" max="200" value="10">
+        </div>
+        <button class="btn btn-block" id="btn-apply-grid" style="margin-top:4px;">그리드 적용</button>
+      </div>
+
+      <!-- 그리드 스타일 -->
+      <div class="section">
+        <div class="section-label">그리드 스타일</div>
+
+        <div class="slider-row">
+          <label>선 두께</label>
+          <input type="range" id="grid-line-width" min="0.5" max="4" step="0.5" value="1">
+          <span class="slider-value" id="line-width-value">1</span>
+        </div>
+
+        <div class="slider-row">
+          <label>투명도</label>
+          <input type="range" id="grid-opacity" min="0.05" max="1" step="0.05" value="0.4">
+          <span class="slider-value" id="opacity-value">40%</span>
+        </div>
+
+        <div class="grid-color-row">
+          <label>선 색상</label>
+          <div class="color-swatch" id="color-swatch">
+            <button style="background:#ffffff;" data-color="#ffffff" class="active" title="흰색"></button>
+            <button style="background:#ff4444;" data-color="#ff4444" title="빨강"></button>
+            <button style="background:#44ff44;" data-color="#44ff44" title="초록"></button>
+            <button style="background:#4488ff;" data-color="#4488ff" title="파랑"></button>
+            <button style="background:#ffdd00;" data-color="#ffdd00" title="노랑"></button>
+            <button style="background:#ff44ff;" data-color="#ff44ff" title="분홍"></button>
+          </div>
+        </div>
+
+        <div class="check-row">
+          <input type="checkbox" id="show-coords" checked>
+          <label for="show-coords">셀 좌표 표시</label>
+        </div>
+
+        <div class="check-row">
+          <input type="checkbox" id="show-major-lines" checked>
+          <label for="show-major-lines">5칸마다 굵은 선</label>
+        </div>
+      </div>
+
+      <!-- 계산 결과 표시 -->
+      <div class="section hidden" id="result-section">
+        <div class="section-label">타일 크기 계산 결과</div>
+        <div class="result-card">
+          <div class="result-title">📐 각 셀의 픽셀 크기</div>
+          <div class="result-row">
+            <span class="result-label">셀 가로</span>
+            <span class="result-value" id="result-cell-w">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">셀 세로</span>
+            <span class="result-value" id="result-cell-h">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label">비율 (W:H)</span>
+            <span class="result-value" id="result-ratio">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 하단 액션 -->
+      <div class="sidebar-footer">
+        <button class="btn btn-success btn-block hidden" id="btn-export">📋 설정 복사 (JSON)</button>
+        <button class="btn btn-primary btn-block hidden" id="btn-export-editor">📋 맵 에디터용 복사</button>
+        <div class="footer-version">Pencil Grid Aligner v1.0</div>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="drop-file-input" accept="image/*" class="hidden">
+
+  <script>
+    // ── 상태 ─────────────────────────────────────────────
+    let imageLoaded = false;
+    let imageWidth = 0;
+    let imageHeight = 0;
+    let imageFilename = '';
+    let imageFilesize = 0;
+
+    let gridCols = 10;
+    let gridRows = 10;
+    let gridLineWidth = 1;
+    let gridOpacity = 0.4;
+    let gridColor = '#ffffff';
+    let showCoords = true;
+    let showMajorLines = true;
+    let zoom = 1.0;
+
+    // ── DOM ──────────────────────────────────────────────
+    const fileInput = document.getElementById('file-input');
+    const dropZone = document.getElementById('drop-zone');
+    const imageGridWrapper = document.getElementById('image-grid-wrapper');
+    const bgImage = document.getElementById('bg-image');
+    const gridOverlayCanvas = document.getElementById('grid-overlay');
+    const gridCtx = gridOverlayCanvas.getContext('2d');
+    const canvasViewport = document.getElementById('canvas-viewport');
+    const zoomControls = document.getElementById('zoom-controls');
+    const cursorCoordsEl = document.getElementById('cursor-coords');
+
+    const btnLoadImage = document.getElementById('btn-load-image');
+    const btnRemoveImage = document.getElementById('btn-remove-image');
+    const imageInfoCard = document.getElementById('image-info-card');
+    const infoFilename = document.getElementById('info-filename');
+    const infoResolution = document.getElementById('info-resolution');
+    const infoFilesize = document.getElementById('info-filesize');
+
+    const inputCols = document.getElementById('grid-cols');
+    const inputRows = document.getElementById('grid-rows');
+    const btnApplyGrid = document.getElementById('btn-apply-grid');
+
+    const sliderLineWidth = document.getElementById('grid-line-width');
+    const lineWidthValue = document.getElementById('line-width-value');
+    const sliderOpacity = document.getElementById('grid-opacity');
+    const opacityValue = document.getElementById('opacity-value');
+    const colorSwatch = document.getElementById('color-swatch');
+    const checkCoords = document.getElementById('show-coords');
+    const checkMajorLines = document.getElementById('show-major-lines');
+
+    const resultSection = document.getElementById('result-section');
+    const resultCellW = document.getElementById('result-cell-w');
+    const resultCellH = document.getElementById('result-cell-h');
+    const resultRatio = document.getElementById('result-ratio');
+
+    const btnExport = document.getElementById('btn-export');
+    const btnExportEditor = document.getElementById('btn-export-editor');
+
+    const toolbarImageInfo = document.getElementById('toolbar-image-info');
+    const toolbarGridInfo = document.getElementById('toolbar-grid-info');
+    const toolbarGridSize = document.getElementById('toolbar-grid-size');
+
+    // ── 이미지 로드 ─────────────────────────────────────
+    function loadImageFile(file) {
+      if (!file || !file.type.startsWith('image/')) return;
+
+      imageFilename = file.name;
+      imageFilesize = file.size;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        bgImage.onload = () => {
+          imageWidth = bgImage.naturalWidth;
+          imageHeight = bgImage.naturalHeight;
+          imageLoaded = true;
+
+          // UI 업데이트
+          dropZone.classList.add('hidden');
+          imageGridWrapper.classList.remove('hidden');
+          zoomControls.classList.remove('hidden');
+          cursorCoordsEl.classList.remove('hidden');
+          btnRemoveImage.classList.remove('hidden');
+          imageInfoCard.classList.remove('hidden');
+          resultSection.classList.remove('hidden');
+          btnExport.classList.remove('hidden');
+          btnExportEditor.classList.remove('hidden');
+
+          infoFilename.textContent = imageFilename;
+          infoResolution.textContent = `${imageWidth} × ${imageHeight}px`;
+          infoFilesize.textContent = formatFileSize(imageFilesize);
+          toolbarImageInfo.textContent = `${imageFilename} (${imageWidth}×${imageHeight})`;
+          toolbarGridInfo.style.display = '';
+
+          // 초기 줌: 뷰포트에 맞추기
+          fitToViewport();
+
+          // 그리드 그리기
+          applyGrid();
+        };
+        bgImage.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeImage() {
+      imageLoaded = false;
+      imageWidth = 0;
+      imageHeight = 0;
+      bgImage.src = '';
+      fileInput.value = '';
+
+      dropZone.classList.remove('hidden');
+      imageGridWrapper.classList.add('hidden');
+      zoomControls.classList.add('hidden');
+      cursorCoordsEl.classList.add('hidden');
+      btnRemoveImage.classList.add('hidden');
+      imageInfoCard.classList.add('hidden');
+      resultSection.classList.add('hidden');
+      btnExport.classList.add('hidden');
+      btnExportEditor.classList.add('hidden');
+
+      toolbarImageInfo.textContent = '이미지를 불러와 주세요';
+      toolbarGridInfo.style.display = 'none';
+    }
+
+    // ── 줌 ────────────────────────────────────────────────
+    function fitToViewport() {
+      const vpRect = canvasViewport.getBoundingClientRect();
+      const scaleX = (vpRect.width - 40) / imageWidth;
+      const scaleY = (vpRect.height - 40) / imageHeight;
+      zoom = Math.min(scaleX, scaleY, 1.0);
+      applyZoom();
+    }
+
+    function applyZoom() {
+      imageGridWrapper.style.transform = `scale(${zoom})`;
+      // 줌이 1 미만이면 중앙 정렬, 1 이상이면 스크롤 허용
+      if (zoom * imageWidth <= canvasViewport.clientWidth && zoom * imageHeight <= canvasViewport.clientHeight) {
+        imageGridWrapper.style.transformOrigin = 'center center';
+      } else {
+        imageGridWrapper.style.transformOrigin = 'top left';
+      }
+    }
+
+    // ── 그리드 그리기 ────────────────────────────────────
+    function applyGrid() {
+      gridCols = parseInt(inputCols.value, 10) || 1;
+      gridRows = parseInt(inputRows.value, 10) || 1;
+
+      if (!imageLoaded) return;
+
+      // 캔버스 크기를 이미지 크기에 맞춤
+      gridOverlayCanvas.width = imageWidth;
+      gridOverlayCanvas.height = imageHeight;
+
+      drawGrid();
+      updateResults();
+      updateToolbar();
+    }
+
+    function drawGrid() {
+      const w = gridOverlayCanvas.width;
+      const h = gridOverlayCanvas.height;
+      const cellW = w / gridCols;
+      const cellH = h / gridRows;
+
+      gridCtx.clearRect(0, 0, w, h);
+
+      // 그리드 선 그리기
+      gridCtx.lineWidth = gridLineWidth;
+
+      // 일반 선
+      gridCtx.strokeStyle = hexToRgba(gridColor, gridOpacity);
+
+      gridCtx.beginPath();
+      // 세로선
+      for (let i = 0; i <= gridCols; i++) {
+        if (showMajorLines && i % 5 === 0) continue; // major 선은 따로 그림
+        const x = Math.round(i * cellW) + 0.5;
+        gridCtx.moveTo(x, 0);
+        gridCtx.lineTo(x, h);
+      }
+      // 가로선
+      for (let j = 0; j <= gridRows; j++) {
+        if (showMajorLines && j % 5 === 0) continue;
+        const y = Math.round(j * cellH) + 0.5;
+        gridCtx.moveTo(0, y);
+        gridCtx.lineTo(w, y);
+      }
+      gridCtx.stroke();
+
+      // Major 선 (5칸 간격)
+      if (showMajorLines) {
+        gridCtx.lineWidth = gridLineWidth * 2.5;
+        gridCtx.strokeStyle = hexToRgba(gridColor, Math.min(gridOpacity * 1.8, 1.0));
+        gridCtx.beginPath();
+
+        for (let i = 0; i <= gridCols; i++) {
+          if (i % 5 !== 0) continue;
+          const x = Math.round(i * cellW) + 0.5;
+          gridCtx.moveTo(x, 0);
+          gridCtx.lineTo(x, h);
+        }
+        for (let j = 0; j <= gridRows; j++) {
+          if (j % 5 !== 0) continue;
+          const y = Math.round(j * cellH) + 0.5;
+          gridCtx.moveTo(0, y);
+          gridCtx.lineTo(w, y);
+        }
+        gridCtx.stroke();
+      }
+
+      // 외곽선 (항상 굵게)
+      gridCtx.lineWidth = gridLineWidth * 3;
+      gridCtx.strokeStyle = hexToRgba(gridColor, Math.min(gridOpacity * 2.2, 1.0));
+      gridCtx.strokeRect(1, 1, w - 2, h - 2);
+
+      // 셀 좌표 표시
+      if (showCoords && cellW > 28 && cellH > 18) {
+        const fontSize = Math.max(8, Math.min(12, cellW * 0.22));
+        gridCtx.font = `500 ${fontSize}px Inter, sans-serif`;
+        gridCtx.textAlign = 'center';
+        gridCtx.textBaseline = 'middle';
+
+        for (let row = 0; row < gridRows; row++) {
+          for (let col = 0; col < gridCols; col++) {
+            const cx = col * cellW + cellW / 2;
+            const cy = row * cellH + cellH / 2;
+
+            // 텍스트 배경 (가독성)
+            const text = `${col},${row}`;
+            const textMetrics = gridCtx.measureText(text);
+            const tw = textMetrics.width + 4;
+            const th = fontSize + 2;
+
+            gridCtx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+            gridCtx.fillRect(cx - tw / 2, cy - th / 2, tw, th);
+
+            gridCtx.fillStyle = hexToRgba(gridColor, Math.min(gridOpacity + 0.3, 0.9));
+            gridCtx.fillText(text, cx, cy);
+          }
+        }
+      }
+    }
+
+    function updateResults() {
+      if (!imageLoaded) return;
+
+      const cellW = imageWidth / gridCols;
+      const cellH = imageHeight / gridRows;
+
+      resultCellW.textContent = `${cellW.toFixed(1)}px`;
+      resultCellH.textContent = `${cellH.toFixed(1)}px`;
+
+      // GCD로 비율 계산
+      const gcd = getGCD(Math.round(cellW * 10), Math.round(cellH * 10));
+      const rw = Math.round(cellW * 10) / gcd;
+      const rh = Math.round(cellH * 10) / gcd;
+      resultRatio.textContent = `${rw} : ${rh}`;
+    }
+
+    function updateToolbar() {
+      toolbarGridSize.textContent = `${gridCols} × ${gridRows}`;
+    }
+
+    // ── 이벤트 리스너 ────────────────────────────────────
+
+    // 이미지 불러오기 버튼
+    btnLoadImage.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        loadImageFile(e.target.files[0]);
+      }
+    });
+
+    // 드롭 존 클릭
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    // 드래그 앤 드롭
+    canvasViewport.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.add('drag-over');
+    });
+
+    canvasViewport.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.remove('drag-over');
+    });
+
+    canvasViewport.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.remove('drag-over');
+
+      if (e.dataTransfer.files.length > 0) {
+        loadImageFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    // 이미지 제거
+    btnRemoveImage.addEventListener('click', removeImage);
+
+    // 그리드 적용
+    btnApplyGrid.addEventListener('click', applyGrid);
+
+    // Enter 키로 그리드 적용
+    inputCols.addEventListener('keydown', (e) => { if (e.key === 'Enter') applyGrid(); });
+    inputRows.addEventListener('keydown', (e) => { if (e.key === 'Enter') applyGrid(); });
+
+    // 선 두께 슬라이더
+    sliderLineWidth.addEventListener('input', () => {
+      gridLineWidth = parseFloat(sliderLineWidth.value);
+      lineWidthValue.textContent = gridLineWidth.toFixed(1);
+      if (imageLoaded) drawGrid();
+    });
+
+    // 투명도 슬라이더
+    sliderOpacity.addEventListener('input', () => {
+      gridOpacity = parseFloat(sliderOpacity.value);
+      opacityValue.textContent = Math.round(gridOpacity * 100) + '%';
+      if (imageLoaded) drawGrid();
+    });
+
+    // 색상 선택
+    colorSwatch.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-color]');
+      if (!btn) return;
+
+      colorSwatch.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      gridColor = btn.dataset.color;
+      if (imageLoaded) drawGrid();
+    });
+
+    // 좌표 표시 토글
+    checkCoords.addEventListener('change', () => {
+      showCoords = checkCoords.checked;
+      if (imageLoaded) drawGrid();
+    });
+
+    // Major 선 토글
+    checkMajorLines.addEventListener('change', () => {
+      showMajorLines = checkMajorLines.checked;
+      if (imageLoaded) drawGrid();
+    });
+
+    // 줌 버튼
+    document.getElementById('btn-zoom-in').addEventListener('click', () => {
+      zoom = Math.min(zoom + 0.15, 5.0);
+      applyZoom();
+    });
+
+    document.getElementById('btn-zoom-out').addEventListener('click', () => {
+      zoom = Math.max(zoom - 0.15, 0.1);
+      applyZoom();
+    });
+
+    document.getElementById('btn-zoom-reset').addEventListener('click', () => {
+      zoom = 1.0;
+      applyZoom();
+    });
+
+    // 마우스 휠 줌
+    canvasViewport.addEventListener('wheel', (e) => {
+      if (!imageLoaded) return;
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.08 : 0.08;
+      zoom = Math.max(0.1, Math.min(5.0, zoom + delta));
+      applyZoom();
+    }, { passive: false });
+
+    // 마우스 좌표 표시 (그리드 오버레이 위)
+    gridOverlayCanvas.style.pointerEvents = 'auto';
+    gridOverlayCanvas.addEventListener('mousemove', (e) => {
+      if (!imageLoaded) return;
+
+      const rect = gridOverlayCanvas.getBoundingClientRect();
+      const scaleX = imageWidth / rect.width;
+      const scaleY = imageHeight / rect.height;
+      const mx = (e.clientX - rect.left) * scaleX;
+      const my = (e.clientY - rect.top) * scaleY;
+
+      const cellW = imageWidth / gridCols;
+      const cellH = imageHeight / gridRows;
+
+      const col = Math.floor(mx / cellW);
+      const row = Math.floor(my / cellH);
+
+      if (col >= 0 && col < gridCols && row >= 0 && row < gridRows) {
+        cursorCoordsEl.textContent = `셀: (${col}, ${row})  |  px: (${Math.round(mx)}, ${Math.round(my)})`;
+      }
+    });
+
+    gridOverlayCanvas.addEventListener('mouseleave', () => {
+      cursorCoordsEl.textContent = '';
+    });
+
+    // JSON 내보내기
+    btnExport.addEventListener('click', () => {
+      const config = {
+        bg_image: imageFilename,
+        grid_w: gridCols,
+        grid_h: gridRows,
+        image_width: imageWidth,
+        image_height: imageHeight,
+        cell_width_px: parseFloat((imageWidth / gridCols).toFixed(1)),
+        cell_height_px: parseFloat((imageHeight / gridRows).toFixed(1)),
+      };
+
+      const jsonStr = JSON.stringify(config, null, 2);
+
+      // 클립보드에 복사
+      navigator.clipboard.writeText(jsonStr).then(() => {
+        const original = btnExport.textContent;
+        btnExport.textContent = '✅ 복사 완료!';
+        setTimeout(() => {
+          btnExport.textContent = original;
+        }, 1500);
+      }).catch(() => {
+        // 클립보드 실패 시 프롬프트로 대체
+        prompt('JSON 설정을 복사해 주세요:', jsonStr);
+      });
+    });
+
+    // 맵 에디터용 최소 JSON보내기
+    btnExportEditor.addEventListener('click', () => {
+      const config = {
+        bg_image: imageFilename,
+        grid_w: gridCols,
+        grid_h: gridRows,
+      };
+      const jsonStr = JSON.stringify(config, null, 2);
+      navigator.clipboard.writeText(jsonStr).then(() => {
+        const original = btnExportEditor.textContent;
+        btnExportEditor.textContent = '✅ 에디터용 복사 완료!';
+        setTimeout(() => { btnExportEditor.textContent = original; }, 1500);
+      }).catch(() => {
+        prompt('맵 에디터용 JSON을 복사해 주세요:', jsonStr);
+      });
+    });
+
+    // ── 유틸리티 ─────────────────────────────────────────
+    function hexToRgba(hex, alpha) {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function getGCD(a, b) {
+      a = Math.abs(a);
+      b = Math.abs(b);
+      while (b) {
+        const t = b;
+        b = a % t;
+        a = t;
+      }
+      return a || 1;
+    }
+  </script>
+</body>
+</html>

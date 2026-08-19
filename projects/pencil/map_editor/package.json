@@ -1,0 +1,12 @@
+{
+  "name": "pencil-map-editor",
+  "version": "2.1.0",
+  "description": "Object Interaction Map Editor for Pencil game",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^31.0.0"
+  }
+}

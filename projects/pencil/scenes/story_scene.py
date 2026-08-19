@@ -9,8 +9,10 @@ from engine.scene import Scene
 from settings import WINDOW_WIDTH, WINDOW_HEIGHT, Colors, ASSETS_DIR
 
 class StoryScene(Scene):
-    def __init__(self, game):
+    def __init__(self, game, story_id=None, pop_on_end=False):
         super().__init__(game)
+        self.story_id = story_id
+        self.pop_on_end = pop_on_end
         self.current_index = 0
         self.waiting_for_choice = False
         self.dialogues = []
@@ -30,9 +32,11 @@ class StoryScene(Scene):
                 self.characters = json.load(f)
 
     def _load_story_data(self):
-        # 현재 방 번호에 맞는 스토리 파일 로드
         room_id = self.game.state.current_room
-        path = os.path.join(ASSETS_DIR, "data", "stories", f"room{room_id}.json")
+        if self.story_id:
+            path = os.path.join(ASSETS_DIR, "data", "stories", f"{self.story_id}.json")
+        else:
+            path = os.path.join(ASSETS_DIR, "data", "stories", f"room{room_id}.json")
         
         if os.path.exists(path):
             with open(path, "r", encoding="utf-8") as f:
@@ -59,16 +63,22 @@ class StoryScene(Scene):
 
     def _proceed(self, next_idx):
         if next_idx == "end":
-            from scenes.battle_scene import BattleScene
-            self.game.scene_manager.change(BattleScene(self.game))
+            if self.pop_on_end:
+                self.game.scene_manager.pop()
+            else:
+                from scenes.exploration_scene import ExplorationScene
+                self.game.scene_manager.change(ExplorationScene(self.game))
             return
-        
+
         self.current_index = int(next_idx)
         if self.current_index < len(self.dialogues):
             self.waiting_for_choice = (self.dialogues[self.current_index]["type"] == "choice")
         else:
-            from scenes.battle_scene import BattleScene
-            self.game.scene_manager.change(BattleScene(self.game))
+            if self.pop_on_end:
+                self.game.scene_manager.pop()
+            else:
+                from scenes.exploration_scene import ExplorationScene
+                self.game.scene_manager.change(ExplorationScene(self.game))
 
     def update(self, dt):
         if self.waiting_for_choice:

@@ -11,7 +11,7 @@ from settings import WINDOW_WIDTH, WINDOW_HEIGHT, Colors
 class TitleScene(Scene):
     def __init__(self, game):
         super().__init__(game)
-        self.menu_items = ["게임 시작", "미니게임", "종료"]
+        self.menu_items = ["게임 시작", "미니게임", "맵 테스트", "종료"]
         self.selected = 0
         self.elapsed = 0.0
 
@@ -31,12 +31,16 @@ class TitleScene(Scene):
     def _select(self):
         from scenes.story_scene import StoryScene
         from scenes.minigame_scene import MinigameScene
+        from scenes.exploration_scene import ExplorationScene
 
         if self.selected == 0:
+            self.game.state.reset()
             self.game.scene_manager.change(StoryScene(self.game))
         elif self.selected == 1:
             self.game.scene_manager.change(MinigameScene(self.game))
         elif self.selected == 2:
+            self.game.scene_manager.change(ExplorationScene(self.game, dev_mode=True, room_id=1))
+        elif self.selected == 3:
             self.game.running = False
 
     def update(self, dt):

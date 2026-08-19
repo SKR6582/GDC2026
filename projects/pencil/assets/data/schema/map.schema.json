@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pencil-map-v1",
+  "title": "Pencil Map",
+  "description": "Pencil Wars 탐험 맵 포맷 v1",
+  "type": "object",
+  "required": ["version", "room_id", "grid"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1
+    },
+    "room_id": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "theme": {
+      "type": "string",
+      "enum": ["DESK_WOOD", "DESK_WHITE", "DESK_DARK"],
+      "default": "DESK_WOOD"
+    },
+    "bg_image": {
+      "type": ["string", "null"],
+      "description": "assets/images/ 아래 파일명. 없으면 null"
+    },
+    "spawn": {
+      "type": "object",
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "integer", "minimum": 0 },
+        "y": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "grid_w": { "type": "integer", "minimum": 1, "maximum": 150 },
+    "grid_h": { "type": "integer", "minimum": 1, "maximum": 100 },
+    "grid": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": { "$ref": "#/$defs/cell" }
+      }
+    }
+  },
+  "$defs": {
+    "cell": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4,
+          "description": "0=길, 1=벽, 2=장식, 3=상호작용, 4=발판"
+        },
+        "event": { "$ref": "#/$defs/event" },
+        "lambda": {
+          "type": "string",
+          "description": "레거시 포맷. event 사용 권장"
+        }
+      }
+    },
+    "event": {
+      "type": "object",
+      "required": ["trigger", "action", "args"],
+      "properties": {
+        "trigger": {
+          "type": "string",
+          "enum": ["interact", "step"]
+        },
+        "action": {
+          "type": "string",
+          "enum": ["log", "teleport", "dialogue", "next_room", "set_flag"]
+        },
+        "args": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

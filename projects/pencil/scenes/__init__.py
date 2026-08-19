@@ -7,3 +7,5 @@ from scenes.story_scene import StoryScene
 from scenes.battle_scene import BattleScene
 from scenes.minigame_scene import MinigameScene
 from scenes.ending_scene import EndingScene
+from scenes.exploration_scene import ExplorationScene
+from scenes.interaction_test_scene import InteractionTestScene

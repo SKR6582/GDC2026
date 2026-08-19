@@ -2,8 +2,14 @@ projects/260313/gamemusic.mp3
 projects/rhythm_game/node_modules
 projects/rhythm_game/public/songs
 projects/subway/node_modules
+projects/baseball/node_modules
+projects/pencil2/map_editor/node_modules
+projects/pencil/map_editor/node_modules
 
+__pycache__/
+*.pyc
+.idea/
 .DS_Store
 
 projects/rhythm_game.zip
-projects/baseball/node_modules
+
